@@ -1,0 +1,175 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// =============================================
+// 1. CHI ĐOÀN
+// =============================================
+model ChiDoan {
+  id          String   @id @default(uuid())
+  tenChiDoan  String   @map("ten_chi_doan")
+  maChiDoan   String   @unique @map("ma_chi_doan")
+  moTa        String?  @map("mo_ta")
+  ngayTao     DateTime @default(now()) @map("ngay_tao")
+  trangThai   Boolean  @default(true) @map("trang_thai")
+
+  nguoiDungs  NguoiDung[]
+  suKiens     SuKien[]
+
+  @@map("chi_doan")
+}
+
+// =============================================
+// 2. NGƯỜI DÙNG
+// =============================================
+model NguoiDung {
+  id              String    @id @default(uuid())
+  email           String    @unique
+  matKhauHash     String    @map("mat_khau_hash")
+  hoTen           String    @map("ho_ten")
+  soDienThoai     String?   @map("so_dien_thoai")
+  vaiTro          String    @map("vai_tro") // DOAN_KHOA hoặc CHI_DOAN
+  chiDoanId       String?   @map("chi_doan_id")
+  ngayTao         DateTime  @default(now()) @map("ngay_tao")
+  lanDangNhapCuoi DateTime? @map("lan_dang_nhap_cuoi")
+  trangThai       Boolean   @default(true) @map("trang_thai")
+
+  chiDoan         ChiDoan?       @relation(fields: [chiDoanId], references: [id])
+  suKienTao       SuKien[]       @relation("NguoiTao")
+  suKienDuyet     SuKien[]       @relation("NguoiDuyet")
+  ghiChuDuyets    GhiChuDuyet[]
+  diemDanhs       DiemDanh[]
+  lichSuSuKiens   LichSuSuKien[]
+
+  @@map("nguoi_dung")
+}
+
+// =============================================
+// 3. HỌC KỲ
+// =============================================
+model HocKy {
+  id          String   @id @default(uuid())
+  tenHocKy    String   @map("ten_hoc_ky")
+  namHoc      String   @map("nam_hoc")
+  ky          Int      // 1, 2, 3 (HK Hè)
+  ngayBatDau  DateTime @map("ngay_bat_dau")
+  ngayKetThuc DateTime @map("ngay_ket_thuc")
+  trangThai   Boolean  @default(true) @map("trang_thai")
+
+  suKiens     SuKien[]
+
+  @@map("hoc_ky")
+}
+
+// =============================================
+// 4. SỰ KIỆN
+// =============================================
+model SuKien {
+  id               String    @id @default(uuid())
+  chiDoanId        String    @map("chi_doan_id")
+  hocKyId          String    @map("hoc_ky_id")
+  tenSuKien        String    @map("ten_su_kien")
+  moTa             String?   @map("mo_ta")
+  linkTaiLieu      String?   @map("link_tai_lieu")
+  diaDiem          String?   @map("dia_diem")
+  thoiGianBatDau   DateTime  @map("thoi_gian_bat_dau")
+  thoiGianKetThuc  DateTime  @map("thoi_gian_ket_thuc")
+  trangThaiDuyet   String    @default("CHO_DUYET") @map("trang_thai_duyet") // CHO_DUYET, DA_DUYET, TU_CHOI, YEU_CAU_SUA
+  nguoiTaoId       String?   @map("nguoi_tao_id")
+  nguoiDuyetId     String?   @map("nguoi_duyet_id")
+  ngayTao          DateTime  @default(now()) @map("ngay_tao")
+  ngayDuyet        DateTime? @map("ngay_duyet")
+  ngayCapNhat      DateTime  @default(now()) @map("ngay_cap_nhat")
+  choPhepDiemDanh  Boolean   @default(false) @map("cho_phep_diem_danh")
+
+  chiDoan          ChiDoan        @relation(fields: [chiDoanId], references: [id])
+  hocKy            HocKy          @relation(fields: [hocKyId], references: [id])
+  nguoiTao         NguoiDung?     @relation("NguoiTao", fields: [nguoiTaoId], references: [id])
+  nguoiDuyet       NguoiDung?     @relation("NguoiDuyet", fields: [nguoiDuyetId], references: [id])
+  ghiChuDuyets     GhiChuDuyet[]
+  diemDanhs        DiemDanh[]
+  lichSuSuKiens    LichSuSuKien[]
+
+  @@map("su_kien")
+}
+
+// =============================================
+// 5. GHI CHÚ DUYỆT
+// =============================================
+model GhiChuDuyet {
+  id          String   @id @default(uuid())
+  suKienId    String   @map("su_kien_id")
+  nguoiGhiId  String   @map("nguoi_ghi_id")
+  noiDung     String   @map("noi_dung")
+  loaiGhiChu  String?  @map("loai_ghi_chu") // DUYET, TU_CHOI, YEU_CAU_SUA, PHAN_HOI
+  ngayTao     DateTime @default(now()) @map("ngay_tao")
+
+  suKien      SuKien    @relation(fields: [suKienId], references: [id], onDelete: Cascade)
+  nguoiGhi    NguoiDung @relation(fields: [nguoiGhiId], references: [id])
+
+  @@map("ghi_chu_duyet")
+}
+
+// =============================================
+// 6. SINH VIÊN
+// =============================================
+model SinhVien {
+  id       String   @id @default(uuid())
+  mssv     String   @unique
+  hoTen    String   @map("ho_ten")
+  lop      String?
+  khoa     String?
+  email    String?
+  barcode  String?
+  ngayTao  DateTime @default(now()) @map("ngay_tao")
+
+  diemDanhs DiemDanh[]
+
+  @@map("sinh_vien")
+}
+
+// =============================================
+// 7. ĐIỂM DANH
+// =============================================
+model DiemDanh {
+  id              String   @id @default(uuid())
+  suKienId        String   @map("su_kien_id")
+  sinhVienId      String   @map("sinh_vien_id")
+  nguoiDiemDanhId String?  @map("nguoi_diem_danh_id")
+  phuongThuc      String?  @map("phuong_thuc") // QR_CODE, BARCODE, THU_CONG
+  thoiGianDiemDanh DateTime @default(now()) @map("thoi_gian_diem_danh")
+  ghiChu          String?  @map("ghi_chu")
+
+  suKien          SuKien    @relation(fields: [suKienId], references: [id], onDelete: Cascade)
+  sinhVien        SinhVien  @relation(fields: [sinhVienId], references: [id])
+  nguoiDiemDanh   NguoiDung? @relation(fields: [nguoiDiemDanhId], references: [id])
+
+  @@unique([suKienId, sinhVienId])
+  @@map("diem_danh")
+}
+
+// =============================================
+// 8. LỊCH SỬ SỰ KIỆN
+// =============================================
+model LichSuSuKien {
+  id            String   @id @default(uuid())
+  suKienId      String   @map("su_kien_id")
+  nguoiThayDoiId String? @map("nguoi_thay_doi_id")
+  hanhDong      String   @map("hanh_dong") // TAO_MOI, CAP_NHAT, DUYET, TU_CHOI
+  noiDungCu     String?  @map("noi_dung_cu") // JSON string
+  noiDungMoi    String?  @map("noi_dung_moi") // JSON string
+  ngayThayDoi   DateTime @default(now()) @map("ngay_thay_doi")
+
+  suKien        SuKien    @relation(fields: [suKienId], references: [id], onDelete: Cascade)
+  nguoiThayDoi  NguoiDung? @relation(fields: [nguoiThayDoiId], references: [id])
+
+  @@map("lich_su_su_kien")
+}
