@@ -47,7 +47,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             include: {
                 sinhVien: {
                     select: {
-                        maSinhVien: true,
+                        mssv: true,
                         hoTen: true,
                     },
                 },
@@ -81,13 +81,19 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
             return NextResponse.json({ error: 'Vui lòng nhập MSSV' }, { status: 400 });
         }
 
-        // Find student
-        const sinhVien = await prisma.sinhVien.findUnique({
-            where: { maSinhVien },
+        // Find or create student
+        let sinhVien = await prisma.sinhVien.findUnique({
+            where: { mssv: maSinhVien },
         });
 
         if (!sinhVien) {
-            return NextResponse.json({ error: 'Không tìm thấy sinh viên với MSSV này' }, { status: 404 });
+            // Auto-create student with MSSV
+            sinhVien = await prisma.sinhVien.create({
+                data: {
+                    mssv: maSinhVien,
+                    hoTen: `SV ${maSinhVien}`, // Default name, can be updated later
+                },
+            });
         }
 
         // Check if already checked in
@@ -116,6 +122,51 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         return NextResponse.json({ success: true, diemDanh, sinhVien });
     } catch (error) {
         console.error('Create attendance error:', error);
+        return NextResponse.json({ error: 'Có lỗi xảy ra' }, { status: 500 });
+    }
+}
+
+export async function DELETE(request: NextRequest, { params }: RouteParams) {
+    try {
+        const token = request.cookies.get('token')?.value;
+        if (!token) {
+            return NextResponse.json({ error: 'Chưa đăng nhập' }, { status: 401 });
+        }
+
+        const user = await verifyToken(token);
+        if (!user || user.vaiTro !== 'CHI_DOAN') {
+            return NextResponse.json({ error: 'Không có quyền' }, { status: 403 });
+        }
+
+        const { id } = await params;
+        const { searchParams } = new URL(request.url);
+        const diemDanhId = searchParams.get('diemDanhId');
+
+        if (!diemDanhId) {
+            return NextResponse.json({ error: 'Thiếu ID điểm danh' }, { status: 400 });
+        }
+
+        // Check if the attendance belongs to the event and the event belongs to the user's chi doan
+        const diemDanh = await prisma.diemDanh.findUnique({
+            where: { id: diemDanhId },
+            include: { suKien: true },
+        });
+
+        if (!diemDanh || diemDanh.suKienId !== id) {
+            return NextResponse.json({ error: 'Không tìm thấy' }, { status: 404 });
+        }
+
+        if (diemDanh.suKien.chiDoanId !== user.chiDoanId) {
+            return NextResponse.json({ error: 'Không có quyền' }, { status: 403 });
+        }
+
+        await prisma.diemDanh.delete({
+            where: { id: diemDanhId },
+        });
+
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        console.error('Delete attendance error:', error);
         return NextResponse.json({ error: 'Có lỗi xảy ra' }, { status: 500 });
     }
 }

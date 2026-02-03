@@ -14,22 +14,28 @@ export default async function MySuKienPage() {
 
     const suKiens = await prisma.suKien.findMany({
         where: { chiDoanId: user.chiDoanId },
-        orderBy: { ngayTao: 'desc' },
+        orderBy: { thoiGianBatDau: 'desc' },
         include: { hocKy: true },
     });
 
-    const statusColors: Record<string, string> = {
-        CHO_DUYET: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-        DA_DUYET: 'bg-green-100 text-green-800 border-green-200',
-        TU_CHOI: 'bg-red-100 text-red-800 border-red-200',
-        YEU_CAU_SUA: 'bg-orange-100 text-orange-800 border-orange-200',
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case 'DA_DUYET': return 'bg-green-500';
+            case 'CHO_DUYET': return 'bg-yellow-500';
+            case 'TU_CHOI': return 'bg-red-500';
+            case 'YEU_CAU_SUA': return 'bg-orange-500';
+            default: return 'bg-gray-500';
+        }
     };
 
-    const statusLabels: Record<string, string> = {
-        CHO_DUYET: 'Chờ duyệt',
-        DA_DUYET: 'Đã duyệt',
-        TU_CHOI: 'Từ chối',
-        YEU_CAU_SUA: 'Yêu cầu sửa',
+    const getStatusText = (status: string) => {
+        switch (status) {
+            case 'DA_DUYET': return 'Đã duyệt';
+            case 'CHO_DUYET': return 'Chờ duyệt';
+            case 'TU_CHOI': return 'Từ chối';
+            case 'YEU_CAU_SUA': return 'Yêu cầu sửa';
+            default: return status;
+        }
     };
 
     return (
@@ -51,8 +57,68 @@ export default async function MySuKienPage() {
                 </Link>
             </div>
 
+            {/* Stats Summary */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="bg-white rounded-2xl shadow-sm p-4">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
+                            <svg className="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p className="text-2xl font-bold text-gray-900">{suKiens.filter(s => s.trangThaiDuyet === 'DA_DUYET').length}</p>
+                            <p className="text-sm text-gray-500">Đã duyệt</p>
+                        </div>
+                    </div>
+                </div>
+                <div className="bg-white rounded-2xl shadow-sm p-4">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-yellow-100 rounded-xl flex items-center justify-center">
+                            <svg className="h-5 w-5 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p className="text-2xl font-bold text-gray-900">{suKiens.filter(s => s.trangThaiDuyet === 'CHO_DUYET').length}</p>
+                            <p className="text-sm text-gray-500">Chờ duyệt</p>
+                        </div>
+                    </div>
+                </div>
+                <div className="bg-white rounded-2xl shadow-sm p-4">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
+                            <svg className="h-5 w-5 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p className="text-2xl font-bold text-gray-900">{suKiens.filter(s => s.trangThaiDuyet === 'YEU_CAU_SUA').length}</p>
+                            <p className="text-sm text-gray-500">Yêu cầu sửa</p>
+                        </div>
+                    </div>
+                </div>
+                <div className="bg-white rounded-2xl shadow-sm p-4">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                            <svg className="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p className="text-2xl font-bold text-gray-900">{suKiens.length}</p>
+                            <p className="text-sm text-gray-500">Tổng số</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {/* Events List */}
             <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-100">
+                    <h2 className="text-lg font-semibold text-gray-900">Danh sách sự kiện</h2>
+                </div>
+
                 {suKiens.length === 0 ? (
                     <div className="p-12 text-center">
                         <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -75,40 +141,47 @@ export default async function MySuKienPage() {
                             <Link
                                 key={event.id}
                                 href={`/chi-doan/su-kien/${event.id}`}
-                                className="block px-6 py-5 hover:bg-gray-50 transition-colors"
+                                className="block px-6 py-4 hover:bg-gray-50 transition-colors"
                             >
                                 <div className="flex items-start justify-between">
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-3 mb-2">
-                                            <h3 className="text-base font-semibold text-gray-900 truncate">
-                                                {event.tenSuKien}
-                                            </h3>
-                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusColors[event.trangThaiDuyet]}`}>
-                                                {statusLabels[event.trangThaiDuyet]}
+                                    <div className="flex items-start gap-4">
+                                        {/* Date Badge */}
+                                        <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-xl flex flex-col items-center justify-center text-white shadow-lg shadow-emerald-200">
+                                            <span className="text-xs font-medium opacity-90">
+                                                Tháng {new Date(event.thoiGianBatDau).getMonth() + 1}
+                                            </span>
+                                            <span className="text-xl font-bold">
+                                                {new Date(event.thoiGianBatDau).getDate()}
                                             </span>
                                         </div>
-                                        <div className="flex items-center gap-4 text-sm text-gray-500">
-                                            <span className="flex items-center">
-                                                <svg className="mr-1.5 h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                </svg>
-                                                {new Date(event.thoiGianBatDau).toLocaleDateString('vi-VN', {
-                                                    day: '2-digit',
-                                                    month: '2-digit',
-                                                    year: 'numeric'
-                                                })}
-                                            </span>
-                                            <span className="flex items-center">
-                                                <svg className="mr-1.5 h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13" />
-                                                </svg>
-                                                {event.hocKy.tenHocKy}
-                                            </span>
+
+                                        {/* Event Info */}
+                                        <div className="flex-1 min-w-0">
+                                            <h3 className="font-semibold text-gray-900 truncate">{event.tenSuKien}</h3>
+
+                                            <div className="flex items-center gap-3 mt-2 text-sm text-gray-500">
+                                                <span className="flex items-center">
+                                                    <svg className="mr-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                    {new Date(event.thoiGianBatDau).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                                                    {' - '}
+                                                    {new Date(event.thoiGianKetThuc).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                                                </span>
+                                                <span className="flex items-center">
+                                                    <svg className="mr-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13" />
+                                                    </svg>
+                                                    {event.hocKy.tenHocKy}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
-                                    <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                    </svg>
+
+                                    {/* Status Badge */}
+                                    <span className={`flex-shrink-0 px-3 py-1 text-xs font-medium rounded-full text-white ${getStatusColor(event.trangThaiDuyet)}`}>
+                                        {getStatusText(event.trangThaiDuyet)}
+                                    </span>
                                 </div>
                             </Link>
                         ))}
