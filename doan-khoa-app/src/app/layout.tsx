@@ -10,6 +10,9 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Đoàn Khoa - Hệ thống quản lý sự kiện",
   description: "Hệ thống quản lý sự kiện cho Đoàn Khoa và các Chi Đoàn",
+  icons: {
+    icon: '/favicon.png',
+  },
 };
 
 export default function RootLayout({
