@@ -15,9 +15,23 @@ export default async function MySuKienPage() {
     }
 
     const suKiens = await prisma.suKien.findMany({
-        where: { chiDoanId: user.chiDoanId },
+        where: {
+            OR: [
+                { chiDoanId: user.chiDoanId },
+                { chiDoan: { maChiDoan: 'DOAN_KHOA' } }
+            ]
+        },
         orderBy: { thoiGianBatDau: 'desc' },
-        include: { hocKy: true },
+        include: { hocKy: true, chiDoan: true },
+    });
+
+    // Sort: Đoàn Khoa pinned top
+    suKiens.sort((a, b) => {
+        const aDK = a.chiDoan.maChiDoan === 'DOAN_KHOA';
+        const bDK = b.chiDoan.maChiDoan === 'DOAN_KHOA';
+        if (aDK && !bDK) return -1;
+        if (!aDK && bDK) return 1;
+        return 0; // Keep original orderBy for others
     });
 
     const getStatusColor = (status: string) => {
@@ -143,12 +157,16 @@ export default async function MySuKienPage() {
                             <Link
                                 key={event.id}
                                 href={`/chi-doan/su-kien/${event.id}`}
-                                className="block px-6 py-4 hover:bg-gray-50 transition-colors"
+                                className={`block px-6 py-4 hover:bg-gray-50 transition-colors ${event.chiDoan.maChiDoan === 'DOAN_KHOA' ? 'bg-blue-50/60 border-l-4 border-[#0054A6]' : ''
+                                    }`}
                             >
                                 <div className="flex items-start justify-between">
                                     <div className="flex items-start gap-4">
                                         {/* Date Badge */}
-                                        <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-xl flex flex-col items-center justify-center text-white shadow-lg shadow-emerald-200">
+                                        <div className={`flex-shrink-0 w-14 h-14 rounded-xl flex flex-col items-center justify-center text-white shadow-lg ${event.chiDoan.maChiDoan === 'DOAN_KHOA'
+                                                ? 'bg-[#0054A6] shadow-blue-200'
+                                                : 'bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-emerald-200'
+                                            }`}>
                                             <span className="text-xs font-medium opacity-90">
                                                 Tháng {new Date(event.thoiGianBatDau).getMonth() + 1}
                                             </span>
@@ -159,7 +177,18 @@ export default async function MySuKienPage() {
 
                                         {/* Event Info */}
                                         <div className="flex-1 min-w-0">
-                                            <h3 className="font-semibold text-gray-900 truncate">{event.tenSuKien}</h3>
+                                            <div className="flex items-center gap-2">
+                                                <h3 className={`font-semibold truncate ${event.chiDoan.maChiDoan === 'DOAN_KHOA' ? 'text-[#0054A6] text-lg' : 'text-gray-900'
+                                                    }`}>
+                                                    {event.chiDoan.maChiDoan === 'DOAN_KHOA' && '★ '}
+                                                    {event.tenSuKien}
+                                                </h3>
+                                                {event.chiDoan.maChiDoan === 'DOAN_KHOA' && (
+                                                    <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">
+                                                        Đoàn Khoa
+                                                    </span>
+                                                )}
+                                            </div>
 
                                             <div className="flex items-center gap-3 mt-2 text-sm text-gray-500 flex-wrap">
                                                 <span className="flex items-center">
@@ -172,8 +201,8 @@ export default async function MySuKienPage() {
                                                 </span>
                                                 {/* Hình thức badge */}
                                                 <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${event.hinhThuc === 'ONLINE'
-                                                        ? 'bg-purple-100 text-purple-700'
-                                                        : 'bg-blue-100 text-blue-700'
+                                                    ? 'bg-purple-100 text-purple-700'
+                                                    : 'bg-blue-100 text-blue-700'
                                                     }`}>
                                                     {event.hinhThuc === 'ONLINE' ? '🌐 Online' : '📍 Offline'}
                                                 </span>

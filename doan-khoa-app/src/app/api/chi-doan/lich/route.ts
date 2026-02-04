@@ -34,6 +34,7 @@ export async function GET(request: NextRequest) {
                     select: {
                         id: true,
                         tenChiDoan: true,
+                        maChiDoan: true,
                     }
                 },
                 hocKy: true,

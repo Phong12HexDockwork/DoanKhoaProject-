@@ -81,9 +81,14 @@ export async function GET(request: NextRequest) {
         }
 
         const suKiens = await prisma.suKien.findMany({
-            where: { chiDoanId: user.chiDoanId },
+            where: {
+                OR: [
+                    { chiDoanId: user.chiDoanId },
+                    { chiDoan: { maChiDoan: 'DOAN_KHOA' } }
+                ]
+            },
             orderBy: { ngayTao: 'desc' },
-            include: { hocKy: true },
+            include: { hocKy: true, chiDoan: true },
         });
 
         return NextResponse.json({ suKiens });

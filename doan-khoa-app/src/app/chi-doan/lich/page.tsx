@@ -6,6 +6,7 @@ import Link from 'next/link';
 interface ChiDoan {
     id: string;
     tenChiDoan: string;
+    maChiDoan?: string;
 }
 
 interface SuKien {
@@ -96,7 +97,13 @@ export default function LichPage() {
             const eventDate = new Date(sk.thoiGianBatDau);
             return eventDate.getMonth() === currentMonth.getMonth() &&
                 eventDate.getFullYear() === currentMonth.getFullYear();
-        }).sort((a, b) => new Date(a.thoiGianBatDau).getTime() - new Date(b.thoiGianBatDau).getTime());
+        }).sort((a, b) => {
+            const aDK = a.chiDoan.maChiDoan === 'DOAN_KHOA';
+            const bDK = b.chiDoan.maChiDoan === 'DOAN_KHOA';
+            if (aDK && !bDK) return -1;
+            if (!aDK && bDK) return 1;
+            return new Date(a.thoiGianBatDau).getTime() - new Date(b.thoiGianBatDau).getTime();
+        });
     };
 
     const { daysInMonth, startingDay } = getDaysInMonth(currentMonth);
@@ -327,7 +334,9 @@ export default function LichPage() {
                                                         ${roundedClass} ${zIndex}
                                                         ${isMyEvent(event)
                                                             ? 'bg-emerald-600 text-white shadow-sm'
-                                                            : `${getStatusColor(event.trangThaiDuyet)} text-white opacity-80`
+                                                            : event.chiDoan.maChiDoan === 'DOAN_KHOA'
+                                                                ? 'bg-[#0054A6] text-white shadow-sm font-semibold'
+                                                                : `${getStatusColor(event.trangThaiDuyet)} text-white opacity-80`
                                                         }
                                                         ${isHovered ? 'brightness-110 shadow-md ring-2 ring-yellow-300 scale-[1.02]' : ''}
                                                     `}
@@ -373,13 +382,25 @@ export default function LichPage() {
                                     <div className="flex items-start justify-between">
                                         <div className="flex items-start gap-4">
                                             {/* Date Badge */}
-                                            <div className={`flex-shrink-0 w-14 h-14 rounded-xl flex flex-col items-center justify-center ${isMyEvent(event) ? 'bg-emerald-100' : 'bg-gray-100'
+                                            <div className={`flex-shrink-0 w-14 h-14 rounded-xl flex flex-col items-center justify-center ${isMyEvent(event)
+                                                    ? 'bg-emerald-100'
+                                                    : event.chiDoan.maChiDoan === 'DOAN_KHOA'
+                                                        ? 'bg-blue-100 text-[#0054A6]'
+                                                        : 'bg-gray-100'
                                                 }`}>
-                                                <span className={`text-xs font-medium ${isMyEvent(event) ? 'text-emerald-600' : 'text-gray-500'
+                                                <span className={`text-xs font-medium ${isMyEvent(event)
+                                                        ? 'text-emerald-600'
+                                                        : event.chiDoan.maChiDoan === 'DOAN_KHOA'
+                                                            ? 'text-[#0054A6]'
+                                                            : 'text-gray-500'
                                                     }`}>
                                                     Tháng {new Date(event.thoiGianBatDau).getMonth() + 1}
                                                 </span>
-                                                <span className={`text-xl font-bold ${isMyEvent(event) ? 'text-emerald-700' : 'text-gray-700'
+                                                <span className={`text-xl font-bold ${isMyEvent(event)
+                                                        ? 'text-emerald-700'
+                                                        : event.chiDoan.maChiDoan === 'DOAN_KHOA'
+                                                            ? 'text-[#0054A6]'
+                                                            : 'text-gray-700'
                                                     }`}>
                                                     {new Date(event.thoiGianBatDau).getDate()}
                                                 </span>
@@ -399,9 +420,11 @@ export default function LichPage() {
                                                 {/* Chi Đoàn Name - Highlighted */}
                                                 <div className={`inline-block mt-1 px-2 py-0.5 rounded text-sm font-medium ${isMyEvent(event)
                                                     ? 'bg-emerald-100 text-emerald-700'
-                                                    : 'bg-blue-100 text-blue-700'
+                                                    : event.chiDoan.maChiDoan === 'DOAN_KHOA'
+                                                        ? 'bg-blue-100 text-[#0054A6]'
+                                                        : 'bg-blue-50 text-blue-600'
                                                     }`}>
-                                                    {event.chiDoan.tenChiDoan}
+                                                    {event.chiDoan.maChiDoan === 'DOAN_KHOA' ? '★ Đoàn Khoa' : event.chiDoan.tenChiDoan}
                                                 </div>
 
                                                 <div className="flex items-center gap-3 mt-2 text-sm text-gray-500">
