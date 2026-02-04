@@ -79,7 +79,7 @@ export default function NewHocKyPage() {
                                 required
                                 value={form.namHoc}
                                 onChange={(e) => setForm({ ...form, namHoc: e.target.value })}
-                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#0054A6] focus:border-transparent"
                                 placeholder="VD: 2025-2026"
                             />
                         </div>
@@ -90,7 +90,7 @@ export default function NewHocKyPage() {
                             <select
                                 value={form.ky}
                                 onChange={(e) => setForm({ ...form, ky: parseInt(e.target.value) })}
-                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#0054A6] focus:border-transparent"
                             >
                                 <option value={1}>Học kỳ 1</option>
                                 <option value={2}>Học kỳ 2</option>
@@ -109,7 +109,7 @@ export default function NewHocKyPage() {
                                 required
                                 value={form.ngayBatDau}
                                 onChange={(e) => setForm({ ...form, ngayBatDau: e.target.value })}
-                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#0054A6] focus:border-transparent"
                             />
                         </div>
                         <div>
@@ -121,7 +121,7 @@ export default function NewHocKyPage() {
                                 required
                                 value={form.ngayKetThuc}
                                 onChange={(e) => setForm({ ...form, ngayKetThuc: e.target.value })}
-                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#0054A6] focus:border-transparent"
                             />
                         </div>
                     </div>
@@ -130,7 +130,7 @@ export default function NewHocKyPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="flex-1 py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            className="flex-1 py-3 bg-[#0054A6] text-white font-semibold rounded-xl hover:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
                             {loading ? 'Đang xử lý...' : 'Tạo học kỳ'}
                         </button>

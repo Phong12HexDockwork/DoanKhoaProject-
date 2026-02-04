@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 
+export const dynamic = 'force-dynamic';
 interface PageProps {
     params: Promise<{ id: string }>;
     searchParams: Promise<{ chiDoan?: string }>;
@@ -112,8 +113,8 @@ export default async function HocKyDetailPage({ params, searchParams }: PageProp
                         <Link
                             href={`/admin/hoc-ky/${id}`}
                             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${!chiDoanFilter
-                                    ? 'bg-indigo-600 text-white'
-                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                ? 'bg-[#0054A6] text-white'
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                 }`}
                         >
                             Tất cả
@@ -123,8 +124,8 @@ export default async function HocKyDetailPage({ params, searchParams }: PageProp
                                 key={cd.id}
                                 href={`/admin/hoc-ky/${id}?chiDoan=${cd.id}`}
                                 className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${chiDoanFilter === cd.id
-                                        ? 'bg-indigo-600 text-white'
-                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                    ? 'bg-[#0054A6] text-white'
+                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                     }`}
                             >
                                 {cd.tenChiDoan}
@@ -191,7 +192,7 @@ export default async function HocKyDetailPage({ params, searchParams }: PageProp
                                             </span>
                                         </div>
                                     </div>
-                                    <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <svg className="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                     </svg>
                                 </div>

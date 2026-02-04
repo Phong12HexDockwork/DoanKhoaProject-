@@ -3,6 +3,8 @@ import { verifyToken } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 
+export const dynamic = 'force-dynamic';
+
 export default async function DiemDanhPage() {
     const cookieStore = await cookies();
     const token = cookieStore.get('token')?.value;
@@ -38,11 +40,11 @@ export default async function DiemDanhPage() {
             <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
                 {suKiens.length === 0 ? (
                     <div className="p-12 text-center">
-                        <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className="mx-auto h-12 w-12 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                         </svg>
                         <p className="mt-4 text-gray-500">Chưa có sự kiện nào được duyệt</p>
-                        <p className="text-sm text-gray-400 mt-1">Các sự kiện cần được Đoàn Khoa duyệt trước khi điểm danh</p>
+                        <p className="text-sm text-gray-600 mt-1">Các sự kiện cần được Đoàn Khoa duyệt trước khi điểm danh</p>
                     </div>
                 ) : (
                     <div className="divide-y divide-gray-100">
@@ -97,7 +99,7 @@ export default async function DiemDanhPage() {
                                                 </span>
                                             </div>
                                         </div>
-                                        <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <svg className="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                         </svg>
                                     </div>

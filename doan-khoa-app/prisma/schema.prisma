@@ -6,8 +6,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // =============================================
@@ -79,7 +80,9 @@ model SuKien {
   tenSuKien        String    @map("ten_su_kien")
   moTa             String?   @map("mo_ta")
   linkTaiLieu      String?   @map("link_tai_lieu")
-  diaDiem          String?   @map("dia_diem")
+  hinhThuc         String    @default("OFFLINE") @map("hinh_thuc") // ONLINE, OFFLINE
+  coSo             String?   @map("co_so") // CS1, CS2 (only for OFFLINE)
+  diaDiem          String?   @map("dia_diem") // Chi tiết địa điểm (only for OFFLINE)
   thoiGianBatDau   DateTime  @map("thoi_gian_bat_dau")
   thoiGianKetThuc  DateTime  @map("thoi_gian_ket_thuc")
   trangThaiDuyet   String    @default("CHO_DUYET") @map("trang_thai_duyet") // CHO_DUYET, DA_DUYET, TU_CHOI, YEU_CAU_SUA

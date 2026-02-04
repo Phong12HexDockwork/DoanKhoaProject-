@@ -1,6 +1,8 @@
 import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import ApprovalForm from './ApprovalForm';
+import DeleteEventButton from './DeleteEventButton';
+import ExportAttendanceButton from './ExportAttendanceButton';
 
 interface PageProps {
     params: Promise<{ id: string }>;
@@ -44,12 +46,18 @@ export default async function SuKienDetailPage({ params }: PageProps) {
     return (
         <div className="max-w-4xl mx-auto space-y-6">
             {/* Back button */}
-            <a href="/admin/su-kien" className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700">
-                <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-                Quay lại
-            </a>
+            <div className="flex items-center justify-between">
+                <a href="/admin/su-kien" className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700">
+                    <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Quay lại
+                </a>
+                <div className="flex items-center gap-3">
+                    <ExportAttendanceButton eventId={suKien.id} />
+                    <DeleteEventButton eventId={suKien.id} eventName={suKien.tenSuKien} />
+                </div>
+            </div>
 
             {/* Event Header */}
             <div className="bg-white rounded-2xl shadow-sm p-6">
@@ -82,10 +90,28 @@ export default async function SuKienDetailPage({ params }: PageProps) {
                             </p>
                         </div>
 
-                        {suKien.diaDiem && (
+                        {/* Hình thức */}
+                        <div>
+                            <p className="text-xs text-gray-500 uppercase tracking-wide">Hình thức</p>
+                            <p className="mt-1">
+                                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-sm font-medium ${suKien.hinhThuc === 'ONLINE'
+                                        ? 'bg-purple-100 text-purple-700'
+                                        : 'bg-blue-100 text-blue-700'
+                                    }`}>
+                                    {suKien.hinhThuc === 'ONLINE' ? '🌐 Online' : '📍 Offline'}
+                                </span>
+                            </p>
+                        </div>
+
+                        {/* Cơ sở & Địa điểm (chỉ cho Offline) */}
+                        {suKien.hinhThuc !== 'ONLINE' && (suKien.coSo || suKien.diaDiem) && (
                             <div>
                                 <p className="text-xs text-gray-500 uppercase tracking-wide">Địa điểm</p>
-                                <p className="mt-1 text-sm text-gray-900">{suKien.diaDiem}</p>
+                                <p className="mt-1 text-sm text-gray-900">
+                                    {suKien.coSo === 'CS1' && 'Cơ sở 1 (227 Nguyễn Văn Cừ)'}
+                                    {suKien.coSo === 'CS2' && 'Cơ sở 2 (Linh Trung, Thủ Đức)'}
+                                    {suKien.diaDiem && ` - ${suKien.diaDiem}`}
+                                </p>
                             </div>
                         )}
 

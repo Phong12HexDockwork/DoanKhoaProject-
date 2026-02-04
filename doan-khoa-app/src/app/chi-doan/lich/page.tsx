@@ -447,7 +447,7 @@ export default function LichPage() {
                     >
                         <div className="flex items-start justify-between mb-3">
                             <h3 className="font-semibold text-gray-900 line-clamp-2">{selectedEvent.event.tenSuKien}</h3>
-                            <button onClick={() => setSelectedEvent(null)} className="text-gray-400 hover:text-gray-600">
+                            <button onClick={() => setSelectedEvent(null)} className="text-gray-600 hover:text-gray-600">
                                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                 </svg>

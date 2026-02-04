@@ -64,7 +64,7 @@ export default function AddAccountPage() {
                             required
                             value={form.hoTen}
                             onChange={(e) => setForm({ ...form, hoTen: e.target.value })}
-                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#0054A6] focus:border-transparent"
                             placeholder="Nhập họ tên..."
                         />
                     </div>
@@ -78,7 +78,7 @@ export default function AddAccountPage() {
                             required
                             value={form.email}
                             onChange={(e) => setForm({ ...form, email: e.target.value })}
-                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#0054A6] focus:border-transparent"
                             placeholder="Nhập email..."
                         />
                     </div>
@@ -92,7 +92,7 @@ export default function AddAccountPage() {
                             required
                             value={form.password}
                             onChange={(e) => setForm({ ...form, password: e.target.value })}
-                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#0054A6] focus:border-transparent"
                             placeholder="Nhập mật khẩu..."
                         />
                     </div>
@@ -101,7 +101,7 @@ export default function AddAccountPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="flex-1 py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            className="flex-1 py-3 bg-[#0054A6] text-white font-semibold rounded-xl hover:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
                             {loading ? 'Đang xử lý...' : 'Tạo tài khoản'}
                         </button>

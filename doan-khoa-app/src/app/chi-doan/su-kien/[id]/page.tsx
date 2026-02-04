@@ -14,6 +14,8 @@ interface SuKien {
     tenSuKien: string;
     thoiGianBatDau: string;
     thoiGianKetThuc: string;
+    hinhThuc: string;
+    coSo: string | null;
     diaDiem: string | null;
     trangThaiDuyet: string;
     moTa: string | null;
@@ -34,6 +36,8 @@ export default function EditSuKienPage() {
         tenSuKien: '',
         moTa: '',
         linkTaiLieu: '',
+        hinhThuc: 'OFFLINE',
+        coSo: '',
         diaDiem: '',
         hocKyId: '',
         ngayBatDau: '',
@@ -65,6 +69,8 @@ export default function EditSuKienPage() {
                     tenSuKien: sk.tenSuKien,
                     moTa: sk.moTa || '',
                     linkTaiLieu: sk.linkTaiLieu || '',
+                    hinhThuc: sk.hinhThuc || 'OFFLINE',
+                    coSo: sk.coSo || '',
                     diaDiem: sk.diaDiem || '',
                     hocKyId: sk.hocKyId,
                     ngayBatDau: start.toISOString().split('T')[0],
@@ -240,19 +246,73 @@ export default function EditSuKienPage() {
                         </div>
                     </div>
 
+                    {/* Hình thức */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Địa điểm
+                            Hình thức <span className="text-red-500">*</span>
                         </label>
-                        <input
-                            type="text"
-                            disabled={isReadOnly}
-                            value={form.diaDiem}
-                            onChange={(e) => setForm({ ...form, diaDiem: e.target.value })}
-                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
-                            placeholder="Nhập địa điểm tổ chức..."
-                        />
+                        <div className="flex gap-6">
+                            <label className="flex items-center cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="hinhThuc"
+                                    value="OFFLINE"
+                                    disabled={isReadOnly}
+                                    checked={form.hinhThuc === 'OFFLINE'}
+                                    onChange={(e) => setForm({ ...form, hinhThuc: e.target.value, coSo: form.coSo || 'CS1' })}
+                                    className="mr-2 text-emerald-600 focus:ring-emerald-500"
+                                />
+                                <span className="text-gray-700">Offline</span>
+                            </label>
+                            <label className="flex items-center cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="hinhThuc"
+                                    value="ONLINE"
+                                    disabled={isReadOnly}
+                                    checked={form.hinhThuc === 'ONLINE'}
+                                    onChange={(e) => setForm({ ...form, hinhThuc: e.target.value, coSo: '', diaDiem: '' })}
+                                    className="mr-2 text-emerald-600 focus:ring-emerald-500"
+                                />
+                                <span className="text-gray-700">Online</span>
+                            </label>
+                        </div>
                     </div>
+
+                    {/* Cơ sở & Địa điểm (chỉ cho Offline) */}
+                    {form.hinhThuc === 'OFFLINE' && (
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Cơ sở <span className="text-red-500">*</span>
+                                </label>
+                                <select
+                                    required
+                                    disabled={isReadOnly}
+                                    value={form.coSo}
+                                    onChange={(e) => setForm({ ...form, coSo: e.target.value })}
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                                >
+                                    <option value="">Chọn cơ sở</option>
+                                    <option value="CS1">Cơ sở 1 (227 Nguyễn Văn Cừ)</option>
+                                    <option value="CS2">Cơ sở 2 (Linh Trung, Thủ Đức)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Chi tiết địa điểm
+                                </label>
+                                <input
+                                    type="text"
+                                    disabled={isReadOnly}
+                                    value={form.diaDiem}
+                                    onChange={(e) => setForm({ ...form, diaDiem: e.target.value })}
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                                    placeholder="VD: Phòng F102"
+                                />
+                            </div>
+                        </div>
+                    )}
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">

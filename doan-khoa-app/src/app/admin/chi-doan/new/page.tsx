@@ -71,7 +71,7 @@ export default function NewChiDoanPage() {
                                     required
                                     value={form.tenChiDoan}
                                     onChange={(e) => setForm({ ...form, tenChiDoan: e.target.value })}
-                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#0054A6] focus:border-transparent"
                                     placeholder="VD: Chi Đoàn Công nghệ thông tin"
                                 />
                             </div>
@@ -85,7 +85,7 @@ export default function NewChiDoanPage() {
                                     required
                                     value={form.maChiDoan}
                                     onChange={(e) => setForm({ ...form, maChiDoan: e.target.value.toUpperCase() })}
-                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#0054A6] focus:border-transparent"
                                     placeholder="VD: CD_CNTT"
                                 />
                                 <p className="mt-1 text-xs text-gray-500">Mã viết tắt, không dấu, in hoa</p>
@@ -120,7 +120,7 @@ export default function NewChiDoanPage() {
                                     required
                                     value={form.hoTen}
                                     onChange={(e) => setForm({ ...form, hoTen: e.target.value })}
-                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#0054A6] focus:border-transparent"
                                     placeholder="VD: Nguyễn Văn A"
                                 />
                             </div>
@@ -134,7 +134,7 @@ export default function NewChiDoanPage() {
                                     required
                                     value={form.email}
                                     onChange={(e) => setForm({ ...form, email: e.target.value })}
-                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#0054A6] focus:border-transparent"
                                     placeholder="VD: cd_cntt@doankhoa.edu.vn"
                                 />
                             </div>
@@ -159,7 +159,7 @@ export default function NewChiDoanPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="flex-1 py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            className="flex-1 py-3 bg-[#0054A6] text-white font-semibold rounded-xl hover:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
                             {loading ? 'Đang xử lý...' : 'Tạo Chi Đoàn'}
                         </button>

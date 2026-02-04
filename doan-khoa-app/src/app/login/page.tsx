@@ -43,39 +43,53 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900 flex items-center justify-center p-4">
-            {/* Background decoration */}
-            <div className="absolute inset-0 overflow-hidden">
-                <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
-                <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse delay-1000"></div>
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-xl opacity-10"></div>
-            </div>
+        <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+            {/* Background Image with blur */}
+            <div
+                className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-110 blur-sm"
+                style={{ backgroundImage: "url('https://student.hcmus.edu.vn/_next/image?url=%2Fbackground.jpg&w=3840&q=75')" }}
+            />
+            {/* Dark overlay for better readability */}
+            <div className="absolute inset-0 bg-black/30" />
 
-            {/* Login Card */}
-            <div className="relative w-full max-w-md">
-                <div className="backdrop-blur-xl bg-white/10 rounded-3xl shadow-2xl border border-white/20 p-8">
+            {/* Login Card - Liquid Glass Effect */}
+            <div className="relative w-full max-w-md z-10">
+                <div className="backdrop-blur-xl bg-white/10 rounded-3xl shadow-[0_8px_32px_0_rgba(31,38,135,0.37)] border border-white/20 p-8 sm:p-10 relative overflow-hidden group">
+
+                    {/* Glossy shine effect */}
+                    <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+
                     {/* Logo / Header */}
-                    <div className="text-center mb-8">
-                        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl mb-4 shadow-lg">
-                            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                            </svg>
+                    <div className="text-center mb-8 relative z-10">
+                        <div className="inline-flex items-center justify-center gap-3 bg-white/20 backdrop-blur-md rounded-2xl mb-4 shadow-lg border border-white/30 transform group-hover:scale-105 transition-transform duration-300 px-5 py-3">
+                            {/* Logo Đoàn */}
+                            <img
+                                src="https://upload.wikimedia.org/wikipedia/vi/0/09/Huy_Hi%E1%BB%87u_%C4%90o%C3%A0n.png"
+                                alt="Logo Đoàn"
+                                className="w-32 h-32 object-contain"
+                            />
+                            {/* Logo Khoa Vật Lý */}
+                            <img
+                                src="https://phys.hcmus.edu.vn/uploads/khoa-vat-ly/TUI_LA_NGU/1.LOGO_m%E1%BB%9Bi/Logo_Phys-blue.png"
+                                alt="Logo Khoa Vật Lý"
+                                className="w-32 h-32 object-contain"
+                            />
                         </div>
-                        <h1 className="text-2xl font-bold text-white mb-2">Đoàn Khoa</h1>
-                        <p className="text-gray-300 text-sm">Hệ thống quản lý sự kiện</p>
+                        <h1 className="text-xl font-bold text-white mb-1 tracking-wide text-shadow">Đoàn Khoa Vật lý - Vật lý Kỹ thuật</h1>
+                        <p className="text-white/80 text-sm">Trường Đại học Khoa Học Tự Nhiên, ĐHQG-HCM</p>
                     </div>
 
                     {/* Error Message */}
                     {error && (
-                        <div className="mb-6 p-4 bg-red-500/20 border border-red-500/50 rounded-xl">
-                            <p className="text-red-200 text-sm text-center">{error}</p>
+                        <div className="mb-6 p-4 bg-red-500/20 backdrop-blur-sm border border-red-500/30 rounded-xl animate-shake">
+                            <p className="text-white text-sm text-center font-medium shadow-sm">{error}</p>
                         </div>
                     )}
 
                     {/* Form */}
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-200 mb-2">
+                            <label htmlFor="email" className="block text-sm font-semibold text-blue-100 mb-2 pl-1">
                                 Email
                             </label>
                             <input
@@ -83,14 +97,14 @@ export default function LoginPage() {
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                className="w-full px-5 py-3.5 bg-white/90 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0054A6]/50 focus:border-[#0054A6] focus:bg-white transition-all shadow-sm"
                                 placeholder="email@example.com"
                                 required
                             />
                         </div>
 
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-200 mb-2">
+                            <label htmlFor="password" className="block text-sm font-semibold text-blue-100 mb-2 pl-1">
                                 Mật khẩu
                             </label>
                             <input
@@ -98,7 +112,7 @@ export default function LoginPage() {
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                className="w-full px-5 py-3.5 bg-white/90 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0054A6]/50 focus:border-[#0054A6] focus:bg-white transition-all shadow-sm"
                                 placeholder="••••••••"
                                 required
                             />
@@ -107,11 +121,11 @@ export default function LoginPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full py-3 px-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-xl shadow-lg hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02] active:scale-[0.98]"
+                            className="w-full py-3.5 px-4 bg-white text-[#0054A6] font-bold rounded-xl shadow-lg hover:bg-blue-50 focus:outline-none focus:ring-4 focus:ring-white/30 disabled:opacity-70 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02] active:scale-[0.98] mt-2 border border-white/50"
                         >
                             {loading ? (
                                 <span className="flex items-center justify-center">
-                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-[#0054A6]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                     </svg>
@@ -124,22 +138,28 @@ export default function LoginPage() {
                     </form>
 
                     {/* Demo accounts */}
-                    <div className="mt-8 pt-6 border-t border-white/10">
-                        <p className="text-xs text-gray-400 text-center mb-3">Tài khoản demo:</p>
-                        <div className="space-y-2 text-xs text-gray-300">
-                            <div className="flex justify-between bg-white/5 rounded-lg p-2">
-                                <span>Admin:</span>
-                                <span className="font-mono">admin@doankhoa.edu.vn</span>
+                    <div className="mt-8 pt-6 border-t border-white/10 relative z-10">
+                        <p className="text-xs text-blue-200 text-center mb-3 uppercase tracking-wider font-semibold">Tài khoản demo</p>
+                        <div className="space-y-2 text-xs text-blue-100">
+                            <div className="flex justify-between bg-white/5 hover:bg-white/10 transition-colors rounded-lg p-3 border border-white/10 backdrop-blur-sm cursor-pointer" onClick={() => { setEmail('admin@doankhoa.edu.vn'); setPassword('admin123'); }}>
+                                <span className="font-medium">Admin:</span>
+                                <span className="font-mono opacity-90">admin@doankhoa.edu.vn</span>
                             </div>
-                            <div className="flex justify-between bg-white/5 rounded-lg p-2">
-                                <span>Chi đoàn:</span>
-                                <span className="font-mono">cd_cntt@doankhoa.edu.vn</span>
+                            <div className="flex justify-between bg-white/5 hover:bg-white/10 transition-colors rounded-lg p-3 border border-white/10 backdrop-blur-sm cursor-pointer" onClick={() => { setEmail('cd_cntt@doankhoa.edu.vn'); setPassword('admin123'); }}>
+                                <span className="font-medium">Chi đoàn:</span>
+                                <span className="font-mono opacity-90">cd_cntt@doankhoa.edu.vn</span>
                             </div>
-                            <p className="text-center text-gray-500">Mật khẩu: admin123</p>
+                            <p className="text-center text-blue-300/80 mt-2">Mật khẩu chung: <span className="font-mono text-white">admin123</span></p>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <style jsx>{`
+                .text-shadow {
+                    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                }
+            `}</style>
         </div>
     );
 }

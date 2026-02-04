@@ -1,7 +1,9 @@
 import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import ChiDoanActions from './ChiDoanActions';
 
+export const dynamic = 'force-dynamic';
 interface PageProps {
     params: Promise<{ id: string }>;
 }
@@ -57,19 +59,27 @@ export default async function ChiDoanDetailPage({ params }: PageProps) {
 
     return (
         <div className="max-w-4xl mx-auto space-y-6">
-            {/* Back button */}
-            <Link href="/admin/chi-doan" className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700">
-                <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-                Quay lại
-            </Link>
+            {/* Back button and Actions */}
+            <div className="flex items-center justify-between">
+                <Link href="/admin/chi-doan" className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700">
+                    <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Quay lại
+                </Link>
+                <ChiDoanActions
+                    chiDoanId={chiDoan.id}
+                    tenChiDoan={chiDoan.tenChiDoan}
+                    trangThai={chiDoan.trangThai}
+                    suKienCount={chiDoan._count.suKiens}
+                />
+            </div>
 
             {/* Header */}
             <div className="bg-white rounded-2xl shadow-sm p-6">
                 <div className="flex items-start justify-between mb-6">
                     <div className="flex items-center">
-                        <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center">
+                        <div className="w-16 h-16 bg-[#0054A6] rounded-2xl flex items-center justify-center shadow-md">
                             <span className="text-white font-bold text-2xl">
                                 {chiDoan.tenChiDoan.charAt(0)}
                             </span>
@@ -80,8 +90,8 @@ export default async function ChiDoanDetailPage({ params }: PageProps) {
                         </div>
                     </div>
                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${chiDoan.trangThai
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-gray-100 text-gray-600'
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-gray-100 text-gray-600'
                         }`}>
                         {chiDoan.trangThai ? 'Hoạt động' : 'Đã tắt'}
                     </span>
@@ -113,7 +123,7 @@ export default async function ChiDoanDetailPage({ params }: PageProps) {
                     <h2 className="text-lg font-semibold text-gray-900">Tài khoản quản lý</h2>
                     <Link
                         href={`/admin/chi-doan/${id}/account`}
-                        className="text-sm text-indigo-600 hover:text-indigo-700"
+                        className="text-sm text-[#0054A6] hover:text-blue-800"
                     >
                         + Thêm tài khoản
                     </Link>
@@ -128,8 +138,8 @@ export default async function ChiDoanDetailPage({ params }: PageProps) {
                             <div key={user.id} className="px-6 py-4">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center">
-                                        <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
-                                            <span className="text-indigo-600 font-medium">
+                                        <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
+                                            <span className="text-[#0054A6] font-medium">
                                                 {user.hoTen.charAt(0)}
                                             </span>
                                         </div>
@@ -144,7 +154,7 @@ export default async function ChiDoanDetailPage({ params }: PageProps) {
                                             {user.trangThai ? 'Hoạt động' : 'Đã tắt'}
                                         </span>
                                         {user.lanDangNhapCuoi && (
-                                            <p className="text-xs text-gray-400 mt-1">
+                                            <p className="text-xs text-gray-600 mt-1">
                                                 Đăng nhập lần cuối: {new Date(user.lanDangNhapCuoi).toLocaleDateString('vi-VN')}
                                             </p>
                                         )}

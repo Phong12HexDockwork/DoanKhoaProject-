@@ -417,7 +417,7 @@ export default function DiemDanhDetailPage() {
 
                 {!scannerActive && (
                     <div className="text-center py-8 text-gray-500 border-2 border-dashed border-gray-200 rounded-xl">
-                        <svg className="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className="mx-auto h-12 w-12 text-gray-600 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
                         </svg>
                         <p>Chọn camera và bấm "Bật Camera" để quét barcode</p>
@@ -516,13 +516,13 @@ export default function DiemDanhDetailPage() {
                                                     minute: '2-digit',
                                                 })}
                                             </p>
-                                            <p className="text-xs text-gray-400">
+                                            <p className="text-xs text-gray-600">
                                                 {dd.phuongThuc === 'THU_CONG' ? 'Thủ công' : dd.phuongThuc === 'QR_CODE' ? 'QR' : dd.phuongThuc === 'EXCEL' ? 'Excel' : 'Barcode'}
                                             </p>
                                         </div>
                                         <button
                                             onClick={() => showDeleteModal(dd.id, dd.sinhVien.hoTen)}
-                                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                            className="p-1.5 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                             title="Xóa"
                                         >
                                             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

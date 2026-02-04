@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 
+export const dynamic = 'force-dynamic';
 export default async function ChiDoanPage() {
     const chiDoans = await prisma.chiDoan.findMany({
         include: {
@@ -21,7 +22,7 @@ export default async function ChiDoanPage() {
                 </div>
                 <Link
                     href="/admin/chi-doan/new"
-                    className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition-colors"
+                    className="inline-flex items-center px-4 py-2 bg-[#0054A6] text-white font-medium rounded-xl hover:bg-blue-800 transition-colors shadow-lg shadow-blue-200"
                 >
                     <svg className="mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -38,14 +39,14 @@ export default async function ChiDoanPage() {
                         className="bg-white rounded-2xl shadow-sm p-6 hover:shadow-md transition-shadow"
                     >
                         <div className="flex items-start justify-between mb-4">
-                            <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
+                            <div className="w-12 h-12 bg-[#0054A6] rounded-xl flex items-center justify-center shadow-md">
                                 <span className="text-white font-bold text-lg">
                                     {chiDoan.tenChiDoan.charAt(0)}
                                 </span>
                             </div>
                             <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${chiDoan.trangThai
-                                    ? 'bg-green-100 text-green-700'
-                                    : 'bg-gray-100 text-gray-600'
+                                ? 'bg-green-100 text-green-700'
+                                : 'bg-gray-100 text-gray-600'
                                 }`}>
                                 {chiDoan.trangThai ? 'Hoạt động' : 'Đã tắt'}
                             </span>
@@ -78,7 +79,7 @@ export default async function ChiDoanPage() {
                             </Link>
                             <Link
                                 href={`/admin/chi-doan/${chiDoan.id}/account`}
-                                className="flex-1 text-center px-4 py-2 bg-indigo-100 text-indigo-700 font-medium rounded-xl hover:bg-indigo-200 transition-colors text-sm"
+                                className="flex-1 text-center px-4 py-2 bg-blue-50 text-[#0054A6] font-medium rounded-xl hover:bg-blue-100 transition-colors text-sm"
                             >
                                 Cấp tài khoản
                             </Link>
@@ -89,13 +90,13 @@ export default async function ChiDoanPage() {
 
             {chiDoans.length === 0 && (
                 <div className="text-center py-12 bg-white rounded-2xl">
-                    <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="mx-auto h-12 w-12 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0" />
                     </svg>
                     <p className="mt-4 text-gray-500">Chưa có Chi Đoàn nào</p>
                     <Link
                         href="/admin/chi-doan/new"
-                        className="mt-4 inline-flex items-center text-indigo-600 hover:text-indigo-700"
+                        className="mt-4 inline-flex items-center text-[#0054A6] hover:text-blue-800"
                     >
                         <svg className="mr-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

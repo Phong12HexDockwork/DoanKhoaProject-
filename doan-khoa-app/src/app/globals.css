@@ -24,3 +24,18 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Make placeholder text darker for better readability */
+::placeholder {
+  color: #6b7280 !important;
+  /* gray-500 */
+  opacity: 1;
+}
+
+input::placeholder,
+textarea::placeholder,
+select::placeholder {
+  color: #6b7280 !important;
+  /* gray-500 */
+  opacity: 1;
+}
