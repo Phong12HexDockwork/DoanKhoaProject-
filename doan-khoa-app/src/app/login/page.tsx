@@ -35,9 +35,9 @@ export default function LoginPage() {
             } else {
                 router.push('/chi-doan');
             }
+            // Don't set loading to false on success to keep spinner active until navigation
         } catch {
             setError('Đã có lỗi xảy ra. Vui lòng thử lại.');
-        } finally {
             setLoading(false);
         }
     };
