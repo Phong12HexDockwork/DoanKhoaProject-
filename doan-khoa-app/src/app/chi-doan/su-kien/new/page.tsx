@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import ActivityCategorySelector from '@/components/ActivityCategorySelector';
 
 interface HocKy {
     id: string;
@@ -10,6 +11,7 @@ interface HocKy {
 
 export default function CreateSuKienPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [loading, setLoading] = useState(false);
     const [hocKys, setHocKys] = useState<HocKy[]>([]);
     const [form, setForm] = useState({
@@ -24,9 +26,21 @@ export default function CreateSuKienPage() {
         gioBatDau: '',
         ngayKetThuc: '',
         gioKetThuc: '',
+        hangMuc: '',
+        maMuc: '',
     });
 
     useEffect(() => {
+        // Pre-fill date from URL if present
+        const dateParam = searchParams.get('date');
+        if (dateParam) {
+            setForm(f => ({
+                ...f,
+                ngayBatDau: dateParam,
+                ngayKetThuc: dateParam
+            }));
+        }
+
         fetch('/api/hoc-ky')
             .then((res) => res.json())
             .then((data) => {
@@ -36,7 +50,7 @@ export default function CreateSuKienPage() {
                 }
             })
             .catch(console.error);
-    }, []);
+    }, [searchParams]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -71,7 +85,7 @@ export default function CreateSuKienPage() {
     return (
         <div className="max-w-2xl mx-auto">
             <div className="mb-6">
-                <a href="/chi-doan/su-kien" className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700">
+                <a href="/chi-doan/su-kien" className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 transition-colors">
                     <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
@@ -83,8 +97,16 @@ export default function CreateSuKienPage() {
                 <h1 className="text-2xl font-bold text-gray-900 mb-6">Tạo sự kiện mới</h1>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
+                    {/* Hạng mục hoạt động - ĐẶT ĐẦU TIÊN */}
+                    <ActivityCategorySelector
+                        hangMuc={form.hangMuc}
+                        maMuc={form.maMuc}
+                        onChange={(hm, mm) => setForm({ ...form, hangMuc: hm, maMuc: mm })}
+                        required
+                    />
+
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-bold text-gray-900 mb-2">
                             Tên sự kiện <span className="text-red-500">*</span>
                         </label>
                         <input
@@ -92,20 +114,20 @@ export default function CreateSuKienPage() {
                             required
                             value={form.tenSuKien}
                             onChange={(e) => setForm({ ...form, tenSuKien: e.target.value })}
-                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                            className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                             placeholder="Nhập tên sự kiện..."
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-bold text-gray-900 mb-2">
                             Học kỳ <span className="text-red-500">*</span>
                         </label>
                         <select
                             required
                             value={form.hocKyId}
                             onChange={(e) => setForm({ ...form, hocKyId: e.target.value })}
-                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                            className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                         >
                             {hocKys.map((hk) => (
                                 <option key={hk.id} value={hk.id}>{hk.tenHocKy}</option>
@@ -115,7 +137,7 @@ export default function CreateSuKienPage() {
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-bold text-gray-900 mb-2">
                                 Ngày bắt đầu <span className="text-red-500">*</span>
                             </label>
                             <input
@@ -123,11 +145,11 @@ export default function CreateSuKienPage() {
                                 required
                                 value={form.ngayBatDau}
                                 onChange={(e) => setForm({ ...form, ngayBatDau: e.target.value })}
-                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-bold text-gray-900 mb-2">
                                 Giờ bắt đầu <span className="text-red-500">*</span>
                             </label>
                             <input
@@ -135,14 +157,14 @@ export default function CreateSuKienPage() {
                                 required
                                 value={form.gioBatDau}
                                 onChange={(e) => setForm({ ...form, gioBatDau: e.target.value })}
-                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                             />
                         </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-bold text-gray-900 mb-2">
                                 Ngày kết thúc <span className="text-red-500">*</span>
                             </label>
                             <input
@@ -150,11 +172,11 @@ export default function CreateSuKienPage() {
                                 required
                                 value={form.ngayKetThuc}
                                 onChange={(e) => setForm({ ...form, ngayKetThuc: e.target.value })}
-                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-bold text-gray-900 mb-2">
                                 Giờ kết thúc <span className="text-red-500">*</span>
                             </label>
                             <input
@@ -162,14 +184,14 @@ export default function CreateSuKienPage() {
                                 required
                                 value={form.gioKetThuc}
                                 onChange={(e) => setForm({ ...form, gioKetThuc: e.target.value })}
-                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                             />
                         </div>
                     </div>
 
                     {/* Hình thức */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-bold text-gray-900 mb-2">
                             Hình thức <span className="text-red-500">*</span>
                         </label>
                         <div className="flex gap-6">
@@ -182,7 +204,7 @@ export default function CreateSuKienPage() {
                                     onChange={(e) => setForm({ ...form, hinhThuc: e.target.value, coSo: form.coSo || 'CS1' })}
                                     className="mr-2 text-emerald-600 focus:ring-emerald-500"
                                 />
-                                <span className="text-gray-700">Offline</span>
+                                <span className="text-gray-900 font-medium">Offline</span>
                             </label>
                             <label className="flex items-center cursor-pointer">
                                 <input
@@ -193,7 +215,7 @@ export default function CreateSuKienPage() {
                                     onChange={(e) => setForm({ ...form, hinhThuc: e.target.value, coSo: '', diaDiem: '' })}
                                     className="mr-2 text-emerald-600 focus:ring-emerald-500"
                                 />
-                                <span className="text-gray-700">Online</span>
+                                <span className="text-gray-900 font-medium">Online</span>
                             </label>
                         </div>
                     </div>
@@ -202,14 +224,14 @@ export default function CreateSuKienPage() {
                     {form.hinhThuc === 'OFFLINE' && (
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label className="block text-sm font-bold text-gray-900 mb-2">
                                     Cơ sở <span className="text-red-500">*</span>
                                 </label>
                                 <select
                                     required
                                     value={form.coSo}
                                     onChange={(e) => setForm({ ...form, coSo: e.target.value })}
-                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                                 >
                                     <option value="">Chọn cơ sở</option>
                                     <option value="CS1">Cơ sở 1 (227 Nguyễn Văn Cừ)</option>
@@ -217,14 +239,14 @@ export default function CreateSuKienPage() {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label className="block text-sm font-bold text-gray-900 mb-2">
                                     Chi tiết địa điểm
                                 </label>
                                 <input
                                     type="text"
                                     value={form.diaDiem}
                                     onChange={(e) => setForm({ ...form, diaDiem: e.target.value })}
-                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                                     placeholder="VD: Phòng F102"
                                 />
                             </div>
@@ -232,27 +254,27 @@ export default function CreateSuKienPage() {
                     )}
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-bold text-gray-900 mb-2">
                             Link tài liệu
                         </label>
                         <input
                             type="url"
                             value={form.linkTaiLieu}
                             onChange={(e) => setForm({ ...form, linkTaiLieu: e.target.value })}
-                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                            className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                             placeholder="https://drive.google.com/..."
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-bold text-gray-900 mb-2">
                             Mô tả
                         </label>
                         <textarea
                             rows={4}
                             value={form.moTa}
                             onChange={(e) => setForm({ ...form, moTa: e.target.value })}
-                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none"
+                            className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none"
                             placeholder="Mô tả chi tiết về sự kiện..."
                         />
                     </div>

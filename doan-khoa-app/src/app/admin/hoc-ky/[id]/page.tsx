@@ -1,16 +1,18 @@
 import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import ReportCharts from './ReportCharts';
+import { HANG_MUCS, getHangMucByMa, getMucConByMa } from '@/lib/activityCategories';
 
 export const dynamic = 'force-dynamic';
 interface PageProps {
     params: Promise<{ id: string }>;
-    searchParams: Promise<{ chiDoan?: string }>;
+    searchParams: Promise<{ chiDoan?: string; hangMuc?: string }>;
 }
 
 export default async function HocKyDetailPage({ params, searchParams }: PageProps) {
     const { id } = await params;
-    const { chiDoan: chiDoanFilter } = await searchParams;
+    const { chiDoan: chiDoanFilter, hangMuc: hangMucFilter } = await searchParams;
 
     const hocKy = await prisma.hocKy.findUnique({
         where: { id },
@@ -25,23 +27,26 @@ export default async function HocKyDetailPage({ params, searchParams }: PageProp
         orderBy: { tenChiDoan: 'asc' },
     });
 
-    // Get events with optional chi đoàn filter
+    // Get events with optional chi đoàn filter and hang muc filter
     const suKiens = await prisma.suKien.findMany({
         where: {
             hocKyId: id,
             ...(chiDoanFilter ? { chiDoanId: chiDoanFilter } : {}),
+            ...(hangMucFilter ? { hangMuc: hangMucFilter } : {}),
         },
-        orderBy: { thoiGianBatDau: 'asc' },
+        orderBy: { thoiGianBatDau: 'desc' },
         include: {
             chiDoan: true,
         },
     });
 
     // Stats
+    const approvedEvents = suKiens.filter(s => s.trangThaiDuyet === 'DA_DUYET');
+
     const stats = {
         total: suKiens.length,
         choDuyet: suKiens.filter(s => s.trangThaiDuyet === 'CHO_DUYET').length,
-        daDuyet: suKiens.filter(s => s.trangThaiDuyet === 'DA_DUYET').length,
+        daDuyet: approvedEvents.length,
         tuChoi: suKiens.filter(s => s.trangThaiDuyet === 'TU_CHOI').length,
     };
 
@@ -59,6 +64,26 @@ export default async function HocKyDetailPage({ params, searchParams }: PageProp
         YEU_CAU_SUA: 'Yêu cầu sửa',
     };
 
+    // Serialize for client component
+    const serializedSuKiens = suKiens.map(s => ({
+        id: s.id,
+        tenSuKien: s.tenSuKien,
+        trangThaiDuyet: s.trangThaiDuyet,
+        hangMuc: s.hangMuc,
+        maMuc: s.maMuc,
+        chiDoan: {
+            id: s.chiDoan.id,
+            tenChiDoan: s.chiDoan.tenChiDoan,
+            maChiDoan: s.chiDoan.maChiDoan,
+        },
+    }));
+
+    const serializedChiDoans = chiDoans.map(cd => ({
+        id: cd.id,
+        tenChiDoan: cd.tenChiDoan,
+        maChiDoan: cd.maChiDoan,
+    }));
+
     return (
         <div className="space-y-6">
             {/* Back button */}
@@ -73,7 +98,7 @@ export default async function HocKyDetailPage({ params, searchParams }: PageProp
             <div className="bg-white rounded-2xl shadow-sm p-6">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900">{hocKy.tenHocKy}</h1>
+                        <h1 className="text-2xl font-bold text-gray-900">Báo cáo {hocKy.tenHocKy}</h1>
                         <p className="text-gray-500 mt-1">
                             {new Date(hocKy.ngayBatDau).toLocaleDateString('vi-VN')} - {new Date(hocKy.ngayKetThuc).toLocaleDateString('vi-VN')}
                         </p>
@@ -83,26 +108,6 @@ export default async function HocKyDetailPage({ params, searchParams }: PageProp
                         {hocKy.trangThai ? 'Đang diễn ra' : 'Đã kết thúc'}
                     </span>
                 </div>
-
-                {/* Stats */}
-                <div className="grid grid-cols-4 gap-4 mt-6">
-                    <div className="bg-blue-50 rounded-xl p-4 text-center">
-                        <p className="text-2xl font-bold text-blue-600">{stats.total}</p>
-                        <p className="text-sm text-blue-600">Tổng sự kiện</p>
-                    </div>
-                    <div className="bg-yellow-50 rounded-xl p-4 text-center">
-                        <p className="text-2xl font-bold text-yellow-600">{stats.choDuyet}</p>
-                        <p className="text-sm text-yellow-600">Chờ duyệt</p>
-                    </div>
-                    <div className="bg-green-50 rounded-xl p-4 text-center">
-                        <p className="text-2xl font-bold text-green-600">{stats.daDuyet}</p>
-                        <p className="text-sm text-green-600">Đã duyệt</p>
-                    </div>
-                    <div className="bg-red-50 rounded-xl p-4 text-center">
-                        <p className="text-2xl font-bold text-red-600">{stats.tuChoi}</p>
-                        <p className="text-sm text-red-600">Từ chối</p>
-                    </div>
-                </div>
             </div>
 
             {/* Filter */}
@@ -111,7 +116,7 @@ export default async function HocKyDetailPage({ params, searchParams }: PageProp
                     <span className="text-sm font-medium text-gray-700">Lọc theo Chi Đoàn:</span>
                     <div className="flex flex-wrap gap-2">
                         <Link
-                            href={`/admin/hoc-ky/${id}`}
+                            href={`/admin/hoc-ky/${id}${hangMucFilter ? `?hangMuc=${hangMucFilter}` : ''}`}
                             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${!chiDoanFilter
                                 ? 'bg-[#0054A6] text-white'
                                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -119,10 +124,10 @@ export default async function HocKyDetailPage({ params, searchParams }: PageProp
                         >
                             Tất cả
                         </Link>
-                        {chiDoans.map((cd) => (
+                        {chiDoans.filter(cd => cd.maChiDoan !== 'DOAN_KHOA').map((cd) => (
                             <Link
                                 key={cd.id}
-                                href={`/admin/hoc-ky/${id}?chiDoan=${cd.id}`}
+                                href={`/admin/hoc-ky/${id}?chiDoan=${cd.id}${hangMucFilter ? `&hangMuc=${hangMucFilter}` : ''}`}
                                 className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${chiDoanFilter === cd.id
                                     ? 'bg-[#0054A6] text-white'
                                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -135,9 +140,17 @@ export default async function HocKyDetailPage({ params, searchParams }: PageProp
                 </div>
             </div>
 
+            {/* Charts */}
+            <ReportCharts
+                suKiens={serializedSuKiens}
+                chiDoans={serializedChiDoans}
+                hocKyId={id}
+                chiDoanFilter={chiDoanFilter}
+            />
+
             {/* Events List */}
             <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100">
+                <div className="px-6 py-4 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <h2 className="text-lg font-semibold text-gray-900">
                         Danh sách sự kiện
                         {chiDoanFilter && (
@@ -146,6 +159,33 @@ export default async function HocKyDetailPage({ params, searchParams }: PageProp
                             </span>
                         )}
                     </h2>
+
+                    {/* Category Filter */}
+                    <div className="flex flex-wrap gap-2 items-center">
+                        <span className="text-sm text-gray-500">Lọc hạng mục:</span>
+                        <Link
+                            href={`/admin/hoc-ky/${id}${chiDoanFilter ? `?chiDoan=${chiDoanFilter}` : ''}`}
+                            className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold transition-colors ${!hangMucFilter
+                                ? 'bg-[#0054A6] text-white'
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                }`}
+                        >
+                            All
+                        </Link>
+                        {HANG_MUCS.map((hm) => (
+                            <Link
+                                key={hm.ma}
+                                href={`/admin/hoc-ky/${id}?hangMuc=${hm.ma}${chiDoanFilter ? `&chiDoan=${chiDoanFilter}` : ''}`}
+                                className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold transition-colors ${hangMucFilter === hm.ma
+                                    ? 'bg-[#0054A6] text-white'
+                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                    }`}
+                                title={hm.ten}
+                            >
+                                {hm.ma}
+                            </Link>
+                        ))}
+                    </div>
                 </div>
                 {suKiens.length === 0 ? (
                     <div className="p-12 text-center text-gray-500">
@@ -162,39 +202,28 @@ export default async function HocKyDetailPage({ params, searchParams }: PageProp
                                 <div className="flex items-start justify-between">
                                     <div className="flex-1">
                                         <div className="flex items-center gap-3 mb-1">
+                                            {event.hangMuc && (
+                                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-[#0054A6] text-white">
+                                                    {event.hangMuc}
+                                                </span>
+                                            )}
                                             <h3 className="font-medium text-gray-900">{event.tenSuKien}</h3>
                                             <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${statusColors[event.trangThaiDuyet]}`}>
                                                 {statusLabels[event.trangThaiDuyet]}
                                             </span>
                                         </div>
                                         <div className="flex items-center gap-4 text-sm text-gray-500">
-                                            <span className="flex items-center">
-                                                <svg className="mr-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0" />
-                                                </svg>
-                                                {event.chiDoan.tenChiDoan}
-                                            </span>
-                                            <span className="flex items-center">
-                                                <svg className="mr-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                </svg>
+                                            <span>{event.chiDoan.tenChiDoan}</span>
+                                            <span>
                                                 {new Date(event.thoiGianBatDau).toLocaleDateString('vi-VN', {
-                                                    weekday: 'short',
                                                     day: '2-digit',
                                                     month: '2-digit',
+                                                    year: 'numeric',
                                                 })}
-                                            </span>
-                                            <span className="flex items-center">
-                                                <svg className="mr-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                </svg>
-                                                {new Date(event.thoiGianBatDau).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
                                             </span>
                                         </div>
                                     </div>
-                                    <svg className="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                    </svg>
+                                    {/* Removed arrow icon */}
                                 </div>
                             </Link>
                         ))}

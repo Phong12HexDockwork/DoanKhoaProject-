@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import ActivityCategorySelector from '@/components/ActivityCategorySelector';
 
 interface ChiDoan {
     id: string;
@@ -31,6 +32,7 @@ export default function AdminLichPage() {
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [loading, setLoading] = useState(true);
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
     // Create Form State
     const [newEvent, setNewEvent] = useState({
@@ -42,7 +44,11 @@ export default function AdminLichPage() {
         thoiGianBatDau: '',
         thoiGianKetThuc: '',
         hocKyId: '', // Ideally fetch current semester
+        linkTaiLieu: '',
+        hangMuc: '',
+        maMuc: '',
     });
+    const [hasTaiLieu, setHasTaiLieu] = useState(false);
 
     const [hocKys, setHocKys] = useState<{ id: string; tenHocKy: string }[]>([]);
 
@@ -107,6 +113,7 @@ export default function AdminLichPage() {
 
             if (res.ok) {
                 setShowCreateModal(false);
+                setHasTaiLieu(false);
                 fetchEvents();
                 setNewEvent({
                     tenSuKien: '',
@@ -117,6 +124,9 @@ export default function AdminLichPage() {
                     thoiGianBatDau: '',
                     thoiGianKetThuc: '',
                     hocKyId: newEvent.hocKyId, // Keep semester
+                    linkTaiLieu: '',
+                    hangMuc: '',
+                    maMuc: '',
                 });
             } else {
                 alert('Có lỗi xảy ra khi tạo sự kiện');
@@ -124,6 +134,33 @@ export default function AdminLichPage() {
         } catch (error) {
             console.error(error);
         }
+    };
+
+    // Handle click on calendar day cell to create event
+    const handleDayClick = (date: Date) => {
+        // Set default time to 08:00 - 10:00
+        const startDate = new Date(date);
+        startDate.setHours(8, 0, 0, 0);
+        const endDate = new Date(date);
+        endDate.setHours(10, 0, 0, 0);
+
+        // Format for datetime-local input (YYYY-MM-DDTHH:MM)
+        const formatDateTime = (d: Date) => {
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            const hours = String(d.getHours()).padStart(2, '0');
+            const minutes = String(d.getMinutes()).padStart(2, '0');
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        };
+
+        setSelectedDate(date);
+        setNewEvent(prev => ({
+            ...prev,
+            thoiGianBatDau: formatDateTime(startDate),
+            thoiGianKetThuc: formatDateTime(endDate),
+        }));
+        setShowCreateModal(true);
     };
 
     // Helper: Check if event is from Đoàn Khoa
@@ -258,46 +295,157 @@ export default function AdminLichPage() {
                         {Array.from({ length: startingDay }).map((_, i) => (
                             <div key={`empty-${i}`} className="min-h-[120px] border-b border-r bg-gray-50/50" />
                         ))}
-                        {Array.from({ length: daysInMonth }).map((_, i) => {
-                            const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), i + 1);
-                            const dayEvents = suKiens.filter(sk => {
-                                const start = new Date(sk.thoiGianBatDau); start.setHours(0, 0, 0, 0);
-                                const end = new Date(sk.thoiGianKetThuc); end.setHours(23, 59, 59, 999);
-                                const current = new Date(date); current.setHours(0, 0, 0, 0);
-                                return current >= start && current <= end;
-                            }); // Sort optional?
+                        {(() => {
+                            // Pre-calculate slots for the month
+                            const monthStart = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+                            const monthEnd = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
 
-                            const isToday = date.toDateString() === new Date().toDateString();
+                            // Filter events overlapping this month (plus padding for smooth scroll? just month is fine)
+                            const monthEventsSorted = suKiens.filter(sk => {
+                                const start = new Date(sk.thoiGianBatDau);
+                                const end = new Date(sk.thoiGianKetThuc);
+                                return start <= monthEnd && end >= monthStart;
+                            }).sort((a, b) => {
+                                const aDK = isDoanKhoaEvent(a);
+                                const bDK = isDoanKhoaEvent(b);
+                                if (aDK && !bDK) return -1;
+                                if (!aDK && bDK) return 1;
+                                const startA = new Date(a.thoiGianBatDau).getTime();
+                                const startB = new Date(b.thoiGianBatDau).getTime();
+                                if (startA !== startB) return startA - startB;
+                                const durA = new Date(a.thoiGianKetThuc).getTime() - startA;
+                                const durB = new Date(b.thoiGianKetThuc).getTime() - startB;
+                                return durB - durA;
+                            });
 
-                            return (
-                                <div key={i} className={`min-h-[120px] border-b border-r flex flex-col pb-1 ${isToday ? 'bg-blue-50' : ''}`}>
-                                    <div className={`p-2 text-sm font-medium ${isToday ? 'text-[#0054A6] font-bold' : 'text-gray-500'}`}>{i + 1}</div>
-                                    <div className="flex-1 flex flex-col gap-1 px-1">
-                                        {dayEvents.map((event) => {
-                                            const isDK = isDoanKhoaEvent(event);
-                                            // Handle spanning logic simplified for Admin view (just truncating for now to match request speed)
-                                            // Actually user requested "highlight", so I emphasize DK events
-                                            return (
-                                                <div
-                                                    key={event.id}
-                                                    onClick={(e) => handleEventClick(e, event)}
-                                                    className={`
-                                                        px-2 py-1 text-xs cursor-pointer truncate rounded-md mb-0.5
-                                                        ${isDK
-                                                            ? 'bg-[#0054A6] text-white shadow-md font-medium border border-blue-700'
-                                                            : `${getStatusColor(event.trangThaiDuyet)} text-white opacity-90`
-                                                        }
-                                                        hover:scale-[1.02] transition-transform
-                                                    `}
-                                                >
-                                                    {isDK && '★ '} {event.tenSuKien}
-                                                </div>
-                                            );
-                                        })}
+                            const eventSlots: Record<string, number> = {};
+                            const dailyOccupancy: Record<string, boolean[]> = {}; // "YYYY-MM-DD" -> [true, false, true...]
+
+                            monthEventsSorted.forEach(event => {
+                                const start = new Date(event.thoiGianBatDau); start.setHours(0, 0, 0, 0);
+                                const end = new Date(event.thoiGianKetThuc); end.setHours(0, 0, 0, 0);
+
+                                // Get all dates for this event
+                                const dates: string[] = [];
+                                let curr = new Date(start);
+                                while (curr <= end) {
+                                    dates.push(curr.toDateString());
+                                    curr.setDate(curr.getDate() + 1);
+                                }
+
+                                // Find first available slot valid for ALL dates
+                                let slot = 0;
+                                while (true) {
+                                    const isFree = dates.every(d => !dailyOccupancy[d] || !dailyOccupancy[d][slot]);
+                                    if (isFree) break;
+                                    slot++;
+                                }
+
+                                eventSlots[event.id] = slot;
+
+                                // Mark occupied
+                                dates.forEach(d => {
+                                    if (!dailyOccupancy[d]) dailyOccupancy[d] = [];
+                                    dailyOccupancy[d][slot] = true;
+                                });
+                            });
+
+                            // Now render days
+                            return Array.from({ length: daysInMonth }).map((_, i) => {
+                                const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), i + 1);
+                                const dayOfWeek = date.getDay();
+                                const isToday = date.toDateString() === new Date().toDateString();
+                                const dateStr = date.toDateString();
+
+                                // Get max slot index for this day
+                                const dayOccupancy = dailyOccupancy[dateStr] || [];
+                                // We should show at least adjacent empty slots if there is a gap?
+                                // Actually, we need to know the max slot used TODAY to define height, but for grid alignment
+                                // we often just render up to the max occupied slot.
+                                const maxSlot = dayOccupancy.length;
+
+                                // Create sparse array for rendering
+                                const renderSlots = new Array(maxSlot).fill(null);
+
+                                // Find events for today
+                                const eventsToday = monthEventsSorted.filter(sk => {
+                                    const start = new Date(sk.thoiGianBatDau); start.setHours(0, 0, 0, 0);
+                                    const end = new Date(sk.thoiGianKetThuc); end.setHours(0, 0, 0, 0);
+                                    const current = new Date(date); current.setHours(0, 0, 0, 0);
+                                    return current >= start && current <= end;
+                                });
+
+                                eventsToday.forEach(ev => {
+                                    const slot = eventSlots[ev.id];
+                                    if (slot !== undefined) {
+                                        renderSlots[slot] = ev; // Can expand array if needed
+                                    }
+                                });
+
+                                return (
+                                    <div
+                                        key={i}
+                                        onClick={() => handleDayClick(date)}
+                                        className={`min-h-[120px] border-b border-r flex flex-col pb-1 cursor-pointer hover:bg-blue-50/50 transition-colors ${isToday ? 'bg-blue-50' : ''}`}
+                                    >
+                                        <div className={`p-2 text-sm font-medium ${isToday ? 'text-[#0054A6] font-bold' : 'text-gray-500'}`}>{i + 1}</div>
+                                        <div className="flex-1 flex flex-col gap-[2px] px-0">
+                                            {renderSlots.map((event, slotIndex) => {
+                                                if (!event) {
+                                                    return <div key={`empty-${slotIndex}`} className="h-6"></div>;
+                                                }
+
+                                                const isDK = isDoanKhoaEvent(event);
+                                                const start = new Date(event.thoiGianBatDau); start.setHours(0, 0, 0, 0);
+                                                const end = new Date(event.thoiGianKetThuc); end.setHours(0, 0, 0, 0);
+                                                const current = new Date(date); current.setHours(0, 0, 0, 0);
+
+                                                const isStart = current.getTime() === start.getTime();
+                                                const isEnd = current.getTime() === end.getTime();
+                                                const isMultiDay = start.getTime() !== end.getTime();
+
+                                                const visualStart = isStart || dayOfWeek === 0;
+                                                const visualEnd = isEnd || dayOfWeek === 6;
+
+                                                let roundedClass = 'mx-1 rounded-md';
+
+                                                if (isMultiDay) {
+                                                    const connectLeft = !isStart && dayOfWeek !== 0;
+                                                    const connectRight = !isEnd && dayOfWeek !== 6;
+
+                                                    roundedClass = `
+                                                        ${connectLeft ? '-ml-[1px] rounded-l-none border-l-0' : 'ml-1 rounded-l-md'}
+                                                        ${connectRight ? '-mr-[1px] rounded-r-none border-r-0' : 'mr-1 rounded-r-md'}
+                                                        relative
+                                                    `;
+                                                }
+
+                                                return (
+                                                    <div
+                                                        key={event.id}
+                                                        onClick={(e) => handleEventClick(e, event)}
+                                                        className={`
+                                                            px-2 py-1 text-xs cursor-pointer truncate h-6 leading-none
+                                                            ${roundedClass}
+                                                            ${isDK
+                                                                ? 'bg-[#0054A6] text-white shadow-md font-medium border-blue-700'
+                                                                : `${getStatusColor(event.trangThaiDuyet)} text-white opacity-90`
+                                                            }
+                                                            hover:scale-[1.02] transition-transform hover:z-20 z-10
+                                                        `}
+                                                        title={`${event.tenSuKien}`}
+                                                    >
+                                                        <span className={!isStart && isMultiDay ? 'hidden' : 'block'}>
+                                                            {isDK && '★ '} {event.tenSuKien}
+                                                        </span>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
                                     </div>
-                                </div>
-                            );
-                        })}
+                                );
+                            });
+                        })()}
                     </div>
                 </div>
             )}
@@ -334,12 +482,18 @@ export default function AdminLichPage() {
                         </div>
 
                         {/* Hình thức */}
-                        <div className="flex items-center gap-2">
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${selectedEvent.event.hinhThuc === 'ONLINE'
-                                ? 'bg-purple-100 text-purple-700'
-                                : 'bg-blue-100 text-blue-700'
-                                }`}>
-                                {selectedEvent.event.hinhThuc === 'ONLINE' ? '🌐 Online' : '📍 Offline'}
+                        <div className="flex items-center gap-2 text-gray-600">
+                            {selectedEvent.event.hinhThuc === 'ONLINE' ? (
+                                <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                                </svg>
+                            ) : (
+                                <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0" />
+                                </svg>
+                            )}
+                            <span>
+                                {selectedEvent.event.hinhThuc === 'ONLINE' ? 'Online' : 'Offline'}
                             </span>
                         </div>
 
@@ -426,10 +580,17 @@ export default function AdminLichPage() {
 
             {/* Simple Create Modal for Đoàn Khoa */}
             {showCreateModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-2xl p-6 w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
                         <h2 className="text-xl font-bold text-[#0054A6] mb-4">Thêm Sự kiện Đoàn Khoa</h2>
                         <form onSubmit={handleCreateEvent} className="space-y-4">
+                            {/* Hạng mục hoạt động - ĐẶT ĐẦU TIÊN */}
+                            <ActivityCategorySelector
+                                hangMuc={newEvent.hangMuc}
+                                maMuc={newEvent.maMuc}
+                                onChange={(hm, mm) => setNewEvent({ ...newEvent, hangMuc: hm, maMuc: mm })}
+                            />
+
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Tên sự kiện</label>
                                 <input required type="text" className="mt-1 block w-full rounded-xl border border-gray-400 px-4 py-2.5 text-gray-900 shadow-sm focus:border-[#0054A6] focus:ring-[#0054A6]"
@@ -502,6 +663,35 @@ export default function AdminLichPage() {
                                         <option key={hk.id} value={hk.id}>{hk.tenHocKy}</option>
                                     ))}
                                 </select>
+                            </div>
+
+                            {/* Tài liệu */}
+                            <div>
+                                <label className="flex items-center gap-3 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={hasTaiLieu}
+                                        onChange={(e) => {
+                                            setHasTaiLieu(e.target.checked);
+                                            if (!e.target.checked) {
+                                                setNewEvent({ ...newEvent, linkTaiLieu: '' });
+                                            }
+                                        }}
+                                        className="h-5 w-5 rounded border-gray-300 text-[#0054A6] focus:ring-[#0054A6]"
+                                    />
+                                    <span className="text-sm font-medium text-gray-700">Có tài liệu đính kèm</span>
+                                </label>
+                                {hasTaiLieu && (
+                                    <div className="mt-3">
+                                        <input
+                                            type="url"
+                                            placeholder="Nhập link tài liệu (VD: https://drive.google.com/...)"
+                                            className="block w-full rounded-xl border border-gray-400 px-4 py-2.5 text-gray-900 shadow-sm focus:border-[#0054A6] focus:ring-[#0054A6]"
+                                            value={newEvent.linkTaiLieu}
+                                            onChange={e => setNewEvent({ ...newEvent, linkTaiLieu: e.target.value })}
+                                        />
+                                    </div>
+                                )}
                             </div>
 
                             <div className="flex justify-end gap-3 mt-6">

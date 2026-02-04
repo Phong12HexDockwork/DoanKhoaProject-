@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyToken } from '@/lib/auth';
+import * as XLSX from 'xlsx';
 
 interface RouteParams {
     params: Promise<{ id: string }>;
@@ -47,8 +48,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             orderBy: { thoiGianDiemDanh: 'asc' },
         });
 
-        // Create CSV content
-        const BOM = '\uFEFF'; // UTF-8 BOM for Excel
+        // Create Excel data
         const headers = ['STT', 'MSSV', 'Họ tên', 'Lớp', 'Khoa', 'Email', 'Thời gian điểm danh', 'Ghi chú'];
 
         const rows = diemDanhs.map((dd, index) => [
@@ -62,19 +62,36 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             dd.ghiChu || '',
         ]);
 
-        const csvContent = BOM + [
-            headers.join(','),
-            ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')),
-        ].join('\n');
+        // Create workbook and worksheet
+        const workbook = XLSX.utils.book_new();
+        const worksheetData = [headers, ...rows];
+        const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+
+        // Set column widths for better readability
+        worksheet['!cols'] = [
+            { wch: 5 },   // STT
+            { wch: 12 },  // MSSV
+            { wch: 25 },  // Họ tên
+            { wch: 15 },  // Lớp
+            { wch: 30 },  // Khoa
+            { wch: 30 },  // Email
+            { wch: 20 },  // Thời gian điểm danh
+            { wch: 30 },  // Ghi chú
+        ];
+
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Điểm danh');
+
+        // Generate Excel buffer
+        const excelBuffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
 
         // Create filename
         const eventDate = new Date(suKien.thoiGianBatDau).toISOString().split('T')[0];
         const sanitizedName = suKien.tenSuKien.replace(/[^a-zA-Z0-9\u00C0-\u1EF9]/g, '_').substring(0, 50);
-        const filename = `DiemDanh_${sanitizedName}_${eventDate}.csv`;
+        const filename = `DiemDanh_${sanitizedName}_${eventDate}.xlsx`;
 
-        return new NextResponse(csvContent, {
+        return new NextResponse(excelBuffer, {
             headers: {
-                'Content-Type': 'text/csv; charset=utf-8',
+                'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                 'Content-Disposition': `attachment; filename="${filename}"`,
             },
         });

@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import ApprovalForm from './ApprovalForm';
 import DeleteEventButton from './DeleteEventButton';
 import ExportAttendanceButton from './ExportAttendanceButton';
+import { getHangMucByMa, getMucConByMa } from '@/lib/activityCategories';
 
 interface PageProps {
     params: Promise<{ id: string }>;
@@ -21,6 +22,9 @@ export default async function SuKienDetailPage({ params }: PageProps) {
             ghiChuDuyets: {
                 orderBy: { ngayTao: 'desc' },
                 include: { nguoiGhi: true },
+            },
+            _count: {
+                select: { diemDanhs: true },
             },
         },
     });
@@ -54,7 +58,7 @@ export default async function SuKienDetailPage({ params }: PageProps) {
                     Quay lại
                 </a>
                 <div className="flex items-center gap-3">
-                    <ExportAttendanceButton eventId={suKien.id} />
+                    <ExportAttendanceButton eventId={suKien.id} attendanceCount={suKien._count.diemDanhs} />
                     <DeleteEventButton eventId={suKien.id} eventName={suKien.tenSuKien} />
                 </div>
             </div>
@@ -93,13 +97,8 @@ export default async function SuKienDetailPage({ params }: PageProps) {
                         {/* Hình thức */}
                         <div>
                             <p className="text-xs text-gray-500 uppercase tracking-wide">Hình thức</p>
-                            <p className="mt-1">
-                                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-sm font-medium ${suKien.hinhThuc === 'ONLINE'
-                                        ? 'bg-purple-100 text-purple-700'
-                                        : 'bg-blue-100 text-blue-700'
-                                    }`}>
-                                    {suKien.hinhThuc === 'ONLINE' ? '🌐 Online' : '📍 Offline'}
-                                </span>
+                            <p className="mt-1 text-sm text-gray-900">
+                                {suKien.hinhThuc === 'ONLINE' ? 'Online' : 'Offline'}
                             </p>
                         </div>
 
@@ -118,6 +117,30 @@ export default async function SuKienDetailPage({ params }: PageProps) {
                         <div>
                             <p className="text-xs text-gray-500 uppercase tracking-wide">Học kỳ</p>
                             <p className="mt-1 text-sm text-gray-900">{suKien.hocKy.tenHocKy}</p>
+                        </div>
+
+                        {/* Hạng mục hoạt động */}
+                        <div>
+                            <p className="text-xs text-gray-500 uppercase tracking-wide">Hạng mục hoạt động</p>
+                            {suKien.hangMuc && suKien.maMuc ? (
+                                <div className="mt-2 bg-blue-50 rounded-lg p-3 border border-blue-100">
+                                    <div className="flex items-center gap-2">
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-[#0054A6] text-white">
+                                            {suKien.hangMuc}
+                                        </span>
+                                        <span className="text-sm font-medium text-gray-900">
+                                            {getHangMucByMa(suKien.hangMuc)?.ten}
+                                        </span>
+                                    </div>
+                                    <div className="mt-2 text-sm text-gray-700">
+                                        <span className="font-medium text-[#0054A6]">{suKien.maMuc}</span>
+                                        {' - '}
+                                        {getMucConByMa(suKien.hangMuc, suKien.maMuc)?.tenMuc}
+                                    </div>
+                                </div>
+                            ) : (
+                                <p className="mt-1 text-sm text-gray-400 italic">Chưa phân loại</p>
+                            )}
                         </div>
                     </div>
 

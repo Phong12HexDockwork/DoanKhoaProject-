@@ -83,6 +83,8 @@ model SuKien {
   hinhThuc         String    @default("OFFLINE") @map("hinh_thuc") // ONLINE, OFFLINE
   coSo             String?   @map("co_so") // CS1, CS2 (only for OFFLINE)
   diaDiem          String?   @map("dia_diem") // Chi tiết địa điểm (only for OFFLINE)
+  hangMuc          String?   @map("hang_muc")   // A, B, C, D, E, F, G, H
+  maMuc            String?   @map("ma_muc")     // 1.1, 1.2, 2.1...
   thoiGianBatDau   DateTime  @map("thoi_gian_bat_dau")
   thoiGianKetThuc  DateTime  @map("thoi_gian_ket_thuc")
   trangThaiDuyet   String    @default("CHO_DUYET") @map("trang_thai_duyet") // CHO_DUYET, DA_DUYET, TU_CHOI, YEU_CAU_SUA

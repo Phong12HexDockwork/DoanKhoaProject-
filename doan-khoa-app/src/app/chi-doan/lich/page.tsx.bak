@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 
 interface ChiDoan {
     id: string;
@@ -18,17 +17,12 @@ interface SuKien {
     diaDiem: string | null;
     trangThaiDuyet: string;
     chiDoan: ChiDoan;
-    hinhThuc?: string;
-    coSo?: string;
-    moTa?: string;
-    linkTaiLieu?: string;
     _count?: {
         diemDanhs: number;
     };
 }
 
 export default function LichPage() {
-    const router = useRouter();
     const [suKiens, setSuKiens] = useState<SuKien[]>([]);
     const [chiDoans, setChiDoans] = useState<ChiDoan[]>([]);
     const [currentChiDoanId, setCurrentChiDoanId] = useState<string>('');
@@ -253,6 +247,7 @@ export default function LichPage() {
                 </div>
             </div>
 
+            {/* Calendar Grid View */}
             {viewMode === 'grid' && (
                 <div className="bg-white rounded-2xl shadow-sm overflow-hidden min-h-[600px]">
                     {/* Weekday Headers */}
@@ -266,169 +261,104 @@ export default function LichPage() {
 
                     {/* Calendar Days */}
                     <div className="grid grid-cols-7 select-none">
+                        {/* Empty cells for days before month starts */}
                         {Array.from({ length: startingDay }).map((_, i) => (
                             <div key={`empty-${i}`} className="min-h-[120px] border-b border-r bg-gray-50/30" />
                         ))}
 
-                        {(() => {
-                            // Pre-calculate slots for the month
-                            const monthStart = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
-                            const monthEnd = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+                        {/* Days of the month */}
+                        {Array.from({ length: daysInMonth }).map((_, i) => {
+                            const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), i + 1);
 
-                            // Filter events overlapping this month
-                            const monthEventsSorted = suKiens.filter(sk => {
+                            // Get events that overlap with this date
+                            const dayEvents = suKiens.filter(sk => {
                                 const start = new Date(sk.thoiGianBatDau);
+                                start.setHours(0, 0, 0, 0);
                                 const end = new Date(sk.thoiGianKetThuc);
-                                return start <= monthEnd && end >= monthStart;
-                            }).sort((a, b) => {
-                                // Sort: Đoàn Khoa first, then Start Time, then Duration
-                                const aDK = a.chiDoan?.maChiDoan === 'DOAN_KHOA';
-                                const bDK = b.chiDoan?.maChiDoan === 'DOAN_KHOA';
-                                if (aDK && !bDK) return -1;
-                                if (!aDK && bDK) return 1;
+                                end.setHours(23, 59, 59, 999);
+                                const current = new Date(date);
+                                current.setHours(0, 0, 0, 0); // Normalized current date (local midnight)
 
-                                const startA = new Date(a.thoiGianBatDau).getTime();
-                                const startB = new Date(b.thoiGianBatDau).getTime();
-                                if (startA !== startB) return startA - startB;
+                                return current >= start && current <= end;
+                            }).sort((a, b) => new Date(a.thoiGianBatDau).getTime() - new Date(b.thoiGianBatDau).getTime());
 
-                                const durA = new Date(a.thoiGianKetThuc).getTime() - startA;
-                                const durB = new Date(b.thoiGianKetThuc).getTime() - startB;
-                                return durB - durA;
-                            });
+                            const isToday = date.toDateString() === new Date().toDateString();
 
-                            const eventSlots: Record<string, number> = {};
-                            const dailyOccupancy: Record<string, boolean[]> = {};
-
-                            monthEventsSorted.forEach(event => {
-                                const start = new Date(event.thoiGianBatDau); start.setHours(0, 0, 0, 0);
-                                const end = new Date(event.thoiGianKetThuc); end.setHours(0, 0, 0, 0);
-
-                                const dates: string[] = [];
-                                let curr = new Date(start);
-                                while (curr <= end) {
-                                    dates.push(curr.toDateString());
-                                    curr.setDate(curr.getDate() + 1);
-                                }
-
-                                let slot = 0;
-                                while (true) {
-                                    const isFree = dates.every(d => !dailyOccupancy[d] || !dailyOccupancy[d][slot]);
-                                    if (isFree) break;
-                                    slot++;
-                                }
-
-                                eventSlots[event.id] = slot;
-
-                                dates.forEach(d => {
-                                    if (!dailyOccupancy[d]) dailyOccupancy[d] = [];
-                                    dailyOccupancy[d][slot] = true;
-                                });
-                            });
-
-                            return Array.from({ length: daysInMonth }).map((_, i) => {
-                                const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), i + 1);
-                                const dayOfWeek = date.getDay();
-                                const isToday = date.toDateString() === new Date().toDateString();
-                                const dateStr = date.toDateString();
-
-                                const dayOccupancy = dailyOccupancy[dateStr] || [];
-                                const maxSlot = dayOccupancy.length;
-                                const renderSlots = new Array(maxSlot).fill(null);
-
-                                const eventsToday = monthEventsSorted.filter(sk => {
-                                    const start = new Date(sk.thoiGianBatDau); start.setHours(0, 0, 0, 0);
-                                    const end = new Date(sk.thoiGianKetThuc); end.setHours(0, 0, 0, 0);
-                                    const current = new Date(date); current.setHours(0, 0, 0, 0);
-                                    return current >= start && current <= end;
-                                });
-
-                                eventsToday.forEach(ev => {
-                                    const slot = eventSlots[ev.id];
-                                    if (slot !== undefined) {
-                                        renderSlots[slot] = ev;
-                                    }
-                                });
-
-                                const handleDayClick = () => {
-                                    const yyyy = date.getFullYear();
-                                    const mm = String(date.getMonth() + 1).padStart(2, '0');
-                                    const dd = String(date.getDate()).padStart(2, '0');
-                                    const dateParam = `${yyyy}-${mm}-${dd}`;
-                                    router.push(`/chi-doan/su-kien/new?date=${dateParam}`);
-                                };
-
-                                return (
-                                    <div
-                                        key={i}
-                                        onClick={handleDayClick}
-                                        className={`min-h-[120px] border-b border-r flex flex-col pb-1 cursor-pointer transition-colors hover:bg-gray-50 ${isToday ? 'bg-emerald-50/40' : ''}`}
-                                    >
-                                        <div className={`p-2 text-sm font-medium ${isToday ? 'text-emerald-600' : 'text-gray-500'}`}>
-                                            {i + 1}
-                                        </div>
-                                        <div className="flex-1 flex flex-col gap-[2px]">
-                                            {renderSlots.map((event, slotIndex) => {
-                                                if (!event) {
-                                                    return <div key={`empty-${slotIndex}`} className="h-6"></div>;
-                                                }
-
-                                                const start = new Date(event.thoiGianBatDau); start.setHours(0, 0, 0, 0);
-                                                const end = new Date(event.thoiGianKetThuc); end.setHours(0, 0, 0, 0);
-                                                const current = new Date(date); current.setHours(0, 0, 0, 0);
-
-                                                const isStart = current.getTime() === start.getTime();
-                                                const isEnd = current.getTime() === end.getTime();
-                                                const isMultiDay = start.getTime() !== end.getTime();
-                                                const isHovered = hoveredEventId === event.id;
-
-                                                const visualStart = isStart || dayOfWeek === 0;
-                                                const visualEnd = isEnd || dayOfWeek === 6;
-
-                                                let roundedClass = 'mx-1 rounded-md';
-
-                                                if (isMultiDay) {
-                                                    const connectLeft = !isStart && dayOfWeek !== 0;
-                                                    const connectRight = !isEnd && dayOfWeek !== 6;
-
-                                                    roundedClass = `
-                                                        ${connectLeft ? '-ml-[1px] rounded-l-none border-l-0' : 'ml-1 rounded-l-md'}
-                                                        ${connectRight ? '-mr-[1px] rounded-r-none border-r-0' : 'mr-1 rounded-r-md'}
-                                                        relative z-10
-                                                    `;
-                                                }
-
-                                                if (isHovered) roundedClass += ' z-20';
-
-                                                return (
-                                                    <div
-                                                        key={event.id}
-                                                        onClick={(e) => handleEventClick(e, event)}
-                                                        onMouseEnter={() => setHoveredEventId(event.id)}
-                                                        onMouseLeave={() => setHoveredEventId(null)}
-                                                        className={`
-                                                            px-2 py-1 text-xs cursor-pointer truncate transition-all duration-200 h-6 leading-none
-                                                            ${roundedClass}
-                                                            ${isMyEvent(event)
-                                                                ? 'bg-emerald-600 text-white shadow-sm'
-                                                                : event.chiDoan.maChiDoan === 'DOAN_KHOA'
-                                                                    ? 'bg-[#0054A6] text-white shadow-sm font-semibold'
-                                                                    : `${getStatusColor(event.trangThaiDuyet)} text-white opacity-80`
-                                                            }
-                                                            ${isHovered ? 'brightness-110 shadow-md ring-2 ring-yellow-300 scale-[1.02]' : ''}
-                                                        `}
-                                                        title={`${event.tenSuKien} (${new Date(event.thoiGianBatDau).toLocaleTimeString()} - ${new Date(event.thoiGianKetThuc).toLocaleTimeString()})`}
-                                                    >
-                                                        <span className={!isStart && isMultiDay ? 'hidden' : 'block'}>
-                                                            {event.chiDoan.maChiDoan === 'DOAN_KHOA' && '★ '} {event.tenSuKien}
-                                                        </span>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
+                            return (
+                                <div
+                                    key={i}
+                                    className={`min-h-[120px] border-b border-r flex flex-col pb-1 ${isToday ? 'bg-emerald-50/40' : ''
+                                        }`}
+                                >
+                                    <div className={`p-2 text-sm font-medium ${isToday ? 'text-emerald-600' : 'text-gray-500'
+                                        }`}>
+                                        {i + 1}
                                     </div>
-                                );
-                            });
-                        })()}
+                                    <div className="flex-1 flex flex-col gap-1">
+                                        {dayEvents.slice(0, 3).map((event) => {
+                                            const start = new Date(event.thoiGianBatDau);
+                                            start.setHours(0, 0, 0, 0);
+                                            const end = new Date(event.thoiGianKetThuc);
+                                            end.setHours(0, 0, 0, 0);
+                                            const current = new Date(date);
+                                            current.setHours(0, 0, 0, 0);
+
+                                            const isStart = current.getTime() === start.getTime();
+                                            const isEnd = current.getTime() === end.getTime();
+                                            const isMiddle = !isStart && !isEnd;
+
+                                            // Determine styles for continuous bar effect
+                                            // If it's a multi-day event (start != end)
+                                            const isMultiDay = start.getTime() !== end.getTime();
+                                            const isHovered = hoveredEventId === event.id;
+
+                                            let roundedClass = 'rounded-md mx-1';
+                                            let zIndex = 'z-10';
+
+                                            if (isMultiDay) {
+                                                if (isStart) roundedClass = 'rounded-l-md ml-1 -mr-[1px] pr-2 relative';
+                                                else if (isEnd) roundedClass = 'rounded-r-md mr-1 -ml-[1px] pl-2 relative';
+                                                else roundedClass = 'rounded-none -mx-[1px] relative';
+                                            }
+
+                                            if (isHovered) zIndex = 'z-20';
+
+                                            return (
+                                                <div
+                                                    key={event.id}
+                                                    onClick={(e) => handleEventClick(e, event)}
+                                                    onMouseEnter={() => setHoveredEventId(event.id)}
+                                                    onMouseLeave={() => setHoveredEventId(null)}
+                                                    className={`
+                                                        px-2 py-1 text-xs cursor-pointer truncate transition-all duration-200 h-6 leading-none relative
+                                                        ${roundedClass} ${zIndex}
+                                                        ${isMyEvent(event)
+                                                            ? 'bg-emerald-600 text-white shadow-sm'
+                                                            : event.chiDoan.maChiDoan === 'DOAN_KHOA'
+                                                                ? 'bg-[#0054A6] text-white shadow-sm font-semibold'
+                                                                : `${getStatusColor(event.trangThaiDuyet)} text-white opacity-80`
+                                                        }
+                                                        ${isHovered ? 'brightness-110 shadow-md ring-2 ring-yellow-300 scale-[1.02]' : ''}
+                                                    `}
+                                                    title={`${event.tenSuKien} (${new Date(event.thoiGianBatDau).toLocaleTimeString()} - ${new Date(event.thoiGianKetThuc).toLocaleTimeString()})`}
+                                                >
+                                                    {/* Show title only on start day or if it's Sunday (start of row visually) - simplified to just showing always but truncated */}
+                                                    {/* Or better: if middle, hide text to avoid repetition? Users usually prefer seeing text if space permits. */}
+                                                    <span className={!isStart && isMultiDay ? 'invisible' : ''}>
+                                                        {event.tenSuKien}
+                                                    </span>
+                                                </div>
+                                            );
+                                        })}
+                                        {dayEvents.length > 3 && (
+                                            <div className="text-[10px] text-gray-500 px-2 mt-auto">
+                                                +{dayEvents.length - 3} nữa
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
             )}
@@ -453,24 +383,24 @@ export default function LichPage() {
                                         <div className="flex items-start gap-4">
                                             {/* Date Badge */}
                                             <div className={`flex-shrink-0 w-14 h-14 rounded-xl flex flex-col items-center justify-center ${isMyEvent(event)
-                                                ? 'bg-emerald-100'
-                                                : event.chiDoan.maChiDoan === 'DOAN_KHOA'
-                                                    ? 'bg-blue-100 text-[#0054A6]'
-                                                    : 'bg-gray-100'
+                                                    ? 'bg-emerald-100'
+                                                    : event.chiDoan.maChiDoan === 'DOAN_KHOA'
+                                                        ? 'bg-blue-100 text-[#0054A6]'
+                                                        : 'bg-gray-100'
                                                 }`}>
                                                 <span className={`text-xs font-medium ${isMyEvent(event)
-                                                    ? 'text-emerald-600'
-                                                    : event.chiDoan.maChiDoan === 'DOAN_KHOA'
-                                                        ? 'text-[#0054A6]'
-                                                        : 'text-gray-500'
+                                                        ? 'text-emerald-600'
+                                                        : event.chiDoan.maChiDoan === 'DOAN_KHOA'
+                                                            ? 'text-[#0054A6]'
+                                                            : 'text-gray-500'
                                                     }`}>
                                                     Tháng {new Date(event.thoiGianBatDau).getMonth() + 1}
                                                 </span>
                                                 <span className={`text-xl font-bold ${isMyEvent(event)
-                                                    ? 'text-emerald-700'
-                                                    : event.chiDoan.maChiDoan === 'DOAN_KHOA'
-                                                        ? 'text-[#0054A6]'
-                                                        : 'text-gray-700'
+                                                        ? 'text-emerald-700'
+                                                        : event.chiDoan.maChiDoan === 'DOAN_KHOA'
+                                                            ? 'text-[#0054A6]'
+                                                            : 'text-gray-700'
                                                     }`}>
                                                     {new Date(event.thoiGianBatDau).getDate()}
                                                 </span>
@@ -535,130 +465,47 @@ export default function LichPage() {
                 <>
                     <div className="fixed inset-0 z-40" onClick={() => setSelectedEvent(null)}></div>
                     <div
-                        className="fixed z-50 bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 w-[320px] animate-in fade-in zoom-in-95 duration-200"
+                        className="fixed z-50 bg-white rounded-xl shadow-2xl border border-gray-100 p-4 w-[280px] animate-in fade-in zoom-in-95 duration-200"
                         style={{ top: selectedEvent.y, left: selectedEvent.x }}
                     >
                         <div className="flex items-start justify-between mb-3">
-                            <h3 className="font-bold text-gray-900 text-lg line-clamp-2 pr-2">{selectedEvent.event.tenSuKien}</h3>
-                            <button onClick={() => setSelectedEvent(null)} className="text-gray-400 hover:text-gray-600 flex-shrink-0 mt-1">
+                            <h3 className="font-semibold text-gray-900 line-clamp-2">{selectedEvent.event.tenSuKien}</h3>
+                            <button onClick={() => setSelectedEvent(null)} className="text-gray-600 hover:text-gray-600">
                                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             </button>
                         </div>
 
-                        <div className="space-y-3 mb-4">
-                            {/* Thời gian */}
-                            <div className="flex items-start gap-3 text-sm text-gray-600">
-                                <div className="mt-0.5 min-w-[16px]">
-                                    <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                </div>
-                                <div className="flex-1">
-                                    <span className="block font-medium text-gray-900">
-                                        {new Date(selectedEvent.event.thoiGianBatDau).toLocaleDateString('vi-VN')}
-                                    </span>
-                                    <span>
-                                        {new Date(selectedEvent.event.thoiGianBatDau).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} - {' '}
-                                        {new Date(selectedEvent.event.thoiGianKetThuc).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
-                                    </span>
-                                </div>
+                        <div className="space-y-2 mb-4">
+                            <div className="flex items-center text-sm text-gray-600">
+                                <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                {new Date(selectedEvent.event.thoiGianBatDau).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
                             </div>
-
-                            {/* Hình thức */}
-                            <div className="flex items-center gap-3 text-sm text-gray-600">
-                                <div className="min-w-[16px]">
-                                    {selectedEvent.event.hinhThuc === 'ONLINE' ? (
-                                        <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                                        </svg>
-                                    ) : (
-                                        <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0" />
-                                        </svg>
-                                    )}
-                                </div>
-                                <span className="font-medium">
-                                    {selectedEvent.event.hinhThuc === 'ONLINE' ? 'Online' : 'Offline'}
-                                </span>
+                            <div className="flex items-center text-sm text-gray-600">
+                                <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                </svg>
+                                {selectedEvent.event.chiDoan.tenChiDoan}
                             </div>
-
-                            {/* Địa điểm (Offline only) */}
-                            {selectedEvent.event.hinhThuc !== 'ONLINE' && (selectedEvent.event.coSo || selectedEvent.event.diaDiem) && (
-                                <div className="flex items-start gap-3 text-sm text-gray-600">
-                                    <div className="mt-0.5 min-w-[16px]">
-                                        <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        </svg>
-                                    </div>
-                                    <span>
-                                        {selectedEvent.event.coSo === 'CS1' && 'Cơ sở 1'}
-                                        {selectedEvent.event.coSo === 'CS2' && 'Cơ sở 2'}
-                                        {selectedEvent.event.diaDiem && ` - ${selectedEvent.event.diaDiem}`}
-                                    </span>
-                                </div>
-                            )}
-
-                            {/* Chi Đoàn */}
-                            <div className="flex items-center gap-3 text-sm text-gray-600">
-                                <div className="min-w-[16px]">
-                                    <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                    </svg>
-                                </div>
-                                <span className={selectedEvent.event.chiDoan.maChiDoan === 'DOAN_KHOA' ? 'font-bold text-[#0054A6]' : ''}>
-                                    {selectedEvent.event.chiDoan.tenChiDoan}
-                                </span>
-                            </div>
-
-                            {/* Link Tài liệu (Chỉ hiển thị cho Đoàn Khoa) */}
-                            {selectedEvent.event.chiDoan.maChiDoan === 'DOAN_KHOA' && selectedEvent.event.linkTaiLieu && (
-                                <div className="flex items-start gap-3 text-sm">
-                                    <div className="mt-0.5 min-w-[16px]">
-                                        <svg className="w-4 h-4 text-[#0054A6]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                                        </svg>
-                                    </div>
-                                    <a
-                                        href={selectedEvent.event.linkTaiLieu}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-[#0054A6] hover:underline break-all"
-                                    >
-                                        Tài liệu đính kèm
-                                    </a>
-                                </div>
-                            )}
-
-                            {/* Mô tả */}
-                            {selectedEvent.event.moTa && (
-                                <div className="pt-2 border-t border-gray-50">
-                                    <p className="text-gray-500 text-xs mt-1 line-clamp-3 leading-relaxed">{selectedEvent.event.moTa}</p>
-                                </div>
-                            )}
                         </div>
 
-                        {isMyEvent(selectedEvent.event) && (
-                            <div className="flex justify-end pt-3 border-t border-gray-100 gap-2">
+                        <div className="flex justify-end pt-2 border-t border-gray-100">
+                            {isMyEvent(selectedEvent.event) && (
                                 <Link
                                     href={`/chi-doan/su-kien/${selectedEvent.event.id}`}
-                                    className="flex-1 text-center px-4 py-2 bg-gray-50 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-100 transition-colors"
-                                >
-                                    Xem chi tiết
-                                </Link>
-                                <Link
-                                    href={`/chi-doan/su-kien/${selectedEvent.event.id}/edit`}
-                                    className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 text-sm font-medium rounded-lg hover:bg-emerald-100 transition-colors"
+                                    className="flex items-center gap-2 px-3 py-2 bg-emerald-50 text-emerald-600 text-sm font-medium rounded-lg hover:bg-emerald-100 transition-colors"
+                                    title="Chỉnh sửa"
                                 >
                                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                     </svg>
                                     Chỉnh sửa
                                 </Link>
-                            </div>
-                        )}
+                            )}
+                        </div>
                     </div>
                 </>
             )}

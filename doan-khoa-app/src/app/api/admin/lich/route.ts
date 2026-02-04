@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
         }
 
         const body = await req.json();
-        const { tenSuKien, moTa, hinhThuc, coSo, diaDiem, thoiGianBatDau, thoiGianKetThuc, hocKyId } = body;
+        const { tenSuKien, moTa, hinhThuc, coSo, diaDiem, thoiGianBatDau, thoiGianKetThuc, hocKyId, linkTaiLieu, hangMuc, maMuc } = body;
 
         let doanKhoa = await prisma.chiDoan.findUnique({
             where: { maChiDoan: 'DOAN_KHOA' },
@@ -67,6 +67,9 @@ export async function POST(req: NextRequest) {
             data: {
                 tenSuKien,
                 moTa,
+                linkTaiLieu: linkTaiLieu || null,
+                hangMuc: hangMuc || null,
+                maMuc: maMuc || null,
                 hinhThuc: hinhThuc || 'OFFLINE',
                 coSo: hinhThuc === 'ONLINE' ? null : coSo,
                 diaDiem: hinhThuc === 'ONLINE' ? null : diaDiem,

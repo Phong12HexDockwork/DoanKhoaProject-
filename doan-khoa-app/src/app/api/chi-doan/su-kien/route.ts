@@ -25,6 +25,8 @@ export async function POST(request: NextRequest) {
             hocKyId,
             thoiGianBatDau,
             thoiGianKetThuc,
+            hangMuc,
+            maMuc,
         } = body;
 
         if (!tenSuKien || !hocKyId || !thoiGianBatDau || !thoiGianKetThuc) {
@@ -41,6 +43,8 @@ export async function POST(request: NextRequest) {
                 tenSuKien,
                 moTa: moTa || null,
                 linkTaiLieu: linkTaiLieu || null,
+                hangMuc: hangMuc || null,
+                maMuc: maMuc || null,
                 hinhThuc: hinhThuc || 'OFFLINE',
                 coSo: hinhThuc === 'ONLINE' ? null : (coSo || null),
                 diaDiem: hinhThuc === 'ONLINE' ? null : (diaDiem || null),

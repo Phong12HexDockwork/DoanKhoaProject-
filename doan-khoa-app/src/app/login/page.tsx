@@ -68,14 +68,8 @@ export default function LoginPage() {
                                 alt="Logo Đoàn"
                                 className="w-32 h-32 object-contain"
                             />
-                            {/* Logo Khoa Vật Lý */}
-                            <img
-                                src="https://phys.hcmus.edu.vn/uploads/khoa-vat-ly/TUI_LA_NGU/1.LOGO_m%E1%BB%9Bi/Logo_Phys-blue.png"
-                                alt="Logo Khoa Vật Lý"
-                                className="w-32 h-32 object-contain"
-                            />
                         </div>
-                        <h1 className="text-xl font-bold text-white mb-1 tracking-wide text-shadow">Đoàn Khoa Vật lý - Vật lý Kỹ thuật</h1>
+                        <h1 className="text-xl font-bold text-white mb-1 tracking-wide text-shadow">Đoàn Khoa Vật lý - Vật lý kỹ thuật</h1>
                         <p className="text-white/80 text-sm">Trường Đại học Khoa Học Tự Nhiên, ĐHQG-HCM</p>
                     </div>
 

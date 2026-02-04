@@ -164,8 +164,8 @@ export default async function MySuKienPage() {
                                     <div className="flex items-start gap-4">
                                         {/* Date Badge */}
                                         <div className={`flex-shrink-0 w-14 h-14 rounded-xl flex flex-col items-center justify-center text-white shadow-lg ${event.chiDoan.maChiDoan === 'DOAN_KHOA'
-                                                ? 'bg-[#0054A6] shadow-blue-200'
-                                                : 'bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-emerald-200'
+                                            ? 'bg-[#0054A6] shadow-blue-200'
+                                            : 'bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-emerald-200'
                                             }`}>
                                             <span className="text-xs font-medium opacity-90">
                                                 Tháng {new Date(event.thoiGianBatDau).getMonth() + 1}
@@ -200,11 +200,17 @@ export default async function MySuKienPage() {
                                                     {new Date(event.thoiGianKetThuc).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
                                                 </span>
                                                 {/* Hình thức badge */}
-                                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${event.hinhThuc === 'ONLINE'
-                                                    ? 'bg-purple-100 text-purple-700'
-                                                    : 'bg-blue-100 text-blue-700'
-                                                    }`}>
-                                                    {event.hinhThuc === 'ONLINE' ? '🌐 Online' : '📍 Offline'}
+                                                <span className="flex items-center">
+                                                    {event.hinhThuc === 'ONLINE' ? (
+                                                        <svg className="mr-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                                                        </svg>
+                                                    ) : (
+                                                        <svg className="mr-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                                        </svg>
+                                                    )}
+                                                    {event.hinhThuc === 'ONLINE' ? 'Online' : 'Offline'}
                                                 </span>
                                             </div>
                                             {/* Địa điểm */}
