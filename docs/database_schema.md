@@ -55,7 +55,11 @@ erDiagram
         varchar ten_su_kien "Tên sự kiện"
         text mo_ta "Mô tả chi tiết"
         text link_tai_lieu "Link Google Drive, Form..."
-        varchar dia_diem "Địa điểm tổ chức"
+        varchar hinh_thuc "ONLINE hoặc OFFLINE"
+        varchar co_so "CS1, CS2 (nếu Offline)"
+        varchar dia_diem "Địa điểm chi tiết"
+        varchar hang_muc "Hạng mục (A-H)"
+        varchar ma_muc "Mã mục (1.1, 1.2...)"
         timestamp thoi_gian_bat_dau "Thời gian bắt đầu"
         timestamp thoi_gian_ket_thuc "Thời gian kết thúc"
         varchar trang_thai_duyet "CHO_DUYET, DA_DUYET, TU_CHOI, YEU_CAU_SUA"
@@ -63,6 +67,7 @@ erDiagram
         uuid nguoi_duyet_id FK "Người duyệt sự kiện"
         timestamp ngay_tao "Ngày tạo"
         timestamp ngay_duyet "Ngày duyệt"
+        timestamp ngay_cap_nhat "Ngày cập nhật cuối"
         boolean cho_phep_diem_danh "Cho phép điểm danh"
     }
 
@@ -161,10 +166,21 @@ erDiagram
 | `chi_doan_id` | UUID | FOREIGN KEY | Chi đoàn tổ chức |
 | `hoc_ky_id` | UUID | FOREIGN KEY | Thuộc học kỳ nào |
 | `ten_su_kien` | VARCHAR(500) | NOT NULL | Tên sự kiện |
+| `mo_ta` | TEXT | | Mô tả chi tiết |
 | `link_tai_lieu` | TEXT | | Link Drive, Form, etc. |
+| `hinh_thuc` | VARCHAR(20) | DEFAULT 'OFFLINE' | ONLINE / OFFLINE |
+| `co_so` | VARCHAR(50) | | CS1 / CS2 (Nếu Offline) |
+| `dia_diem` | VARCHAR(500) | | Địa điểm chi tiết |
+| `hang_muc` | VARCHAR(10) | | Hạng mục (A, B, C...) |
+| `ma_muc` | VARCHAR(50) | | Mã mục (1.1, 1.2...) |
 | `thoi_gian_bat_dau` | TIMESTAMP | NOT NULL | Bắt đầu sự kiện |
 | `thoi_gian_ket_thuc` | TIMESTAMP | NOT NULL | Kết thúc sự kiện |
 | `trang_thai_duyet` | VARCHAR(20) | CHECK | Trạng thái duyệt |
+| `nguoi_tao_id` | UUID | FOREIGN KEY | Người tạo |
+| `nguoi_duyet_id` | UUID | FOREIGN KEY | Người duyệt |
+| `ngay_tao` | TIMESTAMP | DEFAULT NOW | Ngày tạo |
+| `ngay_duyet` | TIMESTAMP | | Ngày duyệt |
+| `ngay_cap_nhat` | TIMESTAMP | DEFAULT NOW | Ngày cập nhật |
 | `cho_phep_diem_danh` | BOOLEAN | DEFAULT FALSE | Mở điểm danh |
 
 **Trạng thái duyệt:**
@@ -319,7 +335,11 @@ CREATE TABLE su_kien (
     ten_su_kien         VARCHAR(500) NOT NULL,
     mo_ta               TEXT,
     link_tai_lieu       TEXT,
+    hinh_thuc           VARCHAR(20) DEFAULT 'OFFLINE',
+    co_so               VARCHAR(50),
     dia_diem            VARCHAR(500),
+    hang_muc            VARCHAR(10),
+    ma_muc              VARCHAR(50),
     thoi_gian_bat_dau   TIMESTAMP NOT NULL,
     thoi_gian_ket_thuc  TIMESTAMP NOT NULL,
     trang_thai_duyet    VARCHAR(20) DEFAULT 'CHO_DUYET' 
