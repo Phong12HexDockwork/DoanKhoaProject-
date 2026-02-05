@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
         }
 
         const user = await verifyToken(token);
-        if (!user) {
+        if (!user || user.vaiTro !== 'DOAN_KHOA') {
             return NextResponse.json({ error: 'Không có quyền' }, { status: 403 });
         }
 

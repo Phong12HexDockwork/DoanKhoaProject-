@@ -187,7 +187,7 @@ export default function LichPage() {
                     <div className="flex items-center gap-4">
                         <button
                             onClick={prevMonth}
-                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                            className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
                         >
                             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -198,7 +198,7 @@ export default function LichPage() {
                         </h2>
                         <button
                             onClick={nextMonth}
-                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                            className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
                         >
                             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

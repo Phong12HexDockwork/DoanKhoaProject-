@@ -447,14 +447,7 @@ export default function DiemDanhDetailPage() {
                     </button>
                 </form>
 
-                {message && (
-                    <div className={`mt-4 p-3 rounded-xl text-sm ${message.type === 'success'
-                        ? 'bg-green-50 text-green-700 border border-green-200'
-                        : 'bg-red-50 text-red-700 border border-red-200'
-                        }`}>
-                        {message.text}
-                    </div>
-                )}
+                {/* Removed message block from here */}
             </div>
 
             {/* Attendance List */}
@@ -462,6 +455,32 @@ export default function DiemDanhDetailPage() {
                 <div className="px-6 py-4 border-b border-gray-100">
                     <div className="flex items-center justify-between mb-3">
                         <h2 className="text-lg font-semibold text-gray-900">Danh sách điểm danh</h2>
+
+                        {/* Message Notification */}
+                        {message && (
+                            <div className={`mt-4 p-4 rounded-xl border flex items-center justify-between ${message.type === 'success'
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
+                                : 'bg-red-50 text-red-700 border-red-100'
+                                }`}>
+                                <div className="flex items-center gap-3">
+                                    {message.type === 'success' ? (
+                                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    ) : (
+                                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    )}
+                                    <span className="font-medium">{message.text}</span>
+                                </div>
+                                <button onClick={() => setMessage(null)} className="text-gray-400 hover:text-gray-600">
+                                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        )}
                         <span className="text-sm text-gray-500">{diemDanhs.length} người</span>
                     </div>
                     <div className="flex gap-2">

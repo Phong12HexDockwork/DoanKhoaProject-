@@ -20,9 +20,14 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
         const suKien = await prisma.suKien.findUnique({
             where: { id },
+            include: { chiDoan: true },
         });
 
-        if (!suKien || suKien.chiDoanId !== user.chiDoanId) {
+        // Allow access if it's own event OR it's a Doan Khoa event
+        const isOwnEvent = suKien?.chiDoanId === user.chiDoanId;
+        const isDoanKhoaEvent = suKien?.chiDoan?.maChiDoan === 'DOAN_KHOA';
+
+        if (!suKien || (!isOwnEvent && !isDoanKhoaEvent)) {
             return NextResponse.json({ error: 'Không tìm thấy sự kiện' }, { status: 404 });
         }
 

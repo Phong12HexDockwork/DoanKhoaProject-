@@ -54,6 +54,8 @@ export default async function MySuKienPage() {
         }
     };
 
+    const myEvents = suKiens.filter(s => s.chiDoan.maChiDoan !== 'DOAN_KHOA');
+
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -83,7 +85,7 @@ export default async function MySuKienPage() {
                             </svg>
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-gray-900">{suKiens.filter(s => s.trangThaiDuyet === 'DA_DUYET').length}</p>
+                            <p className="text-2xl font-bold text-gray-900">{myEvents.filter(s => s.trangThaiDuyet === 'DA_DUYET').length}</p>
                             <p className="text-sm text-gray-500">Đã duyệt</p>
                         </div>
                     </div>
@@ -96,7 +98,7 @@ export default async function MySuKienPage() {
                             </svg>
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-gray-900">{suKiens.filter(s => s.trangThaiDuyet === 'CHO_DUYET').length}</p>
+                            <p className="text-2xl font-bold text-gray-900">{myEvents.filter(s => s.trangThaiDuyet === 'CHO_DUYET').length}</p>
                             <p className="text-sm text-gray-500">Chờ duyệt</p>
                         </div>
                     </div>
@@ -109,7 +111,7 @@ export default async function MySuKienPage() {
                             </svg>
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-gray-900">{suKiens.filter(s => s.trangThaiDuyet === 'YEU_CAU_SUA').length}</p>
+                            <p className="text-2xl font-bold text-gray-900">{myEvents.filter(s => s.trangThaiDuyet === 'YEU_CAU_SUA').length}</p>
                             <p className="text-sm text-gray-500">Yêu cầu sửa</p>
                         </div>
                     </div>
@@ -122,7 +124,7 @@ export default async function MySuKienPage() {
                             </svg>
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-gray-900">{suKiens.length}</p>
+                            <p className="text-2xl font-bold text-gray-900">{myEvents.length}</p>
                             <p className="text-sm text-gray-500">Tổng số</p>
                         </div>
                     </div>
@@ -228,10 +230,12 @@ export default async function MySuKienPage() {
                                         </div>
                                     </div>
 
-                                    {/* Status Badge */}
-                                    <span className={`flex-shrink-0 px-3 py-1 text-xs font-medium rounded-full text-white ${getStatusColor(event.trangThaiDuyet)}`}>
-                                        {getStatusText(event.trangThaiDuyet)}
-                                    </span>
+                                    {/* Status Badge - Only for own events */}
+                                    {event.chiDoan.maChiDoan !== 'DOAN_KHOA' && (
+                                        <span className={`flex-shrink-0 px-3 py-1 text-xs font-medium rounded-full text-white ${getStatusColor(event.trangThaiDuyet)}`}>
+                                            {getStatusText(event.trangThaiDuyet)}
+                                        </span>
+                                    )}
                                 </div>
                             </Link>
                         ))}

@@ -98,6 +98,25 @@ export default function AdminLichPage() {
             // For MVP: pick the hocKyId from the first event or let backend handle?
             // Backend expects hocKyId.
             // Let's filter distinct hocKyId from existing events or ask user.
+            // Validation
+            if (!newEvent.tenSuKien.trim()) {
+                alert('Vui lòng nhập tên sự kiện');
+                return;
+            }
+
+            if (newEvent.hinhThuc === 'OFFLINE' && (!newEvent.diaDiem || !newEvent.diaDiem.trim())) {
+                alert('Vui lòng nhập chi tiết địa điểm (phòng) cho sự kiện Offline');
+                return;
+            }
+
+            const start = new Date(newEvent.thoiGianBatDau);
+            const end = new Date(newEvent.thoiGianKetThuc);
+
+            if (start >= end) {
+                alert('Thời gian kết thúc phải sau thời gian bắt đầu');
+                return;
+            }
+
             // Simplified: Require simple input for now or just take the first one found.
 
             // To be safe, I'll alert if no semester found (assuming seeded).
@@ -403,6 +422,7 @@ export default function AdminLichPage() {
                                                 const isStart = current.getTime() === start.getTime();
                                                 const isEnd = current.getTime() === end.getTime();
                                                 const isMultiDay = start.getTime() !== end.getTime();
+                                                const isHovered = hoveredEventId === event.id;
 
                                                 const visualStart = isStart || dayOfWeek === 0;
                                                 const visualEnd = isEnd || dayOfWeek === 6;
@@ -416,22 +436,27 @@ export default function AdminLichPage() {
                                                     roundedClass = `
                                                         ${connectLeft ? '-ml-[1px] rounded-l-none border-l-0' : 'ml-1 rounded-l-md'}
                                                         ${connectRight ? '-mr-[1px] rounded-r-none border-r-0' : 'mr-1 rounded-r-md'}
-                                                        relative
+                                                        relative z-10
                                                     `;
                                                 }
+
+                                                if (isHovered) roundedClass += ' z-20';
 
                                                 return (
                                                     <div
                                                         key={event.id}
                                                         onClick={(e) => handleEventClick(e, event)}
+                                                        onMouseEnter={() => setHoveredEventId(event.id)}
+                                                        onMouseLeave={() => setHoveredEventId(null)}
                                                         className={`
-                                                            px-2 py-1 text-xs cursor-pointer truncate h-6 leading-none
+                                                            px-2 py-1 text-xs cursor-pointer truncate transition-all duration-200 h-6 leading-none
                                                             ${roundedClass}
                                                             ${isDK
                                                                 ? 'bg-[#0054A6] text-white shadow-md font-medium border-blue-700'
                                                                 : `${getStatusColor(event.trangThaiDuyet)} text-white opacity-90`
                                                             }
-                                                            hover:scale-[1.02] transition-transform hover:z-20 z-10
+                                                            ${isHovered ? 'brightness-110 shadow-md ring-2 ring-yellow-300 scale-[1.02]' : ''}
+                                                            hover:z-20
                                                         `}
                                                         title={`${event.tenSuKien}`}
                                                     >
@@ -645,6 +670,7 @@ export default function AdminLichPage() {
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700">Chi tiết địa điểm</label>
                                         <input type="text" placeholder="VD: Phòng F102"
+                                            required
                                             className="mt-1 block w-full rounded-xl border border-gray-400 px-4 py-2.5 text-gray-900 shadow-sm focus:border-[#0054A6] focus:ring-[#0054A6]"
                                             value={newEvent.diaDiem} onChange={e => setNewEvent({ ...newEvent, diaDiem: e.target.value })} />
                                     </div>

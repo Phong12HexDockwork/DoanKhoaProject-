@@ -9,6 +9,12 @@ interface HocKy {
     tenHocKy: string;
 }
 
+interface ChiDoan {
+    id: string;
+    maChiDoan: string;
+    tenChiDoan: string;
+}
+
 interface SuKien {
     id: string;
     tenSuKien: string;
@@ -21,6 +27,7 @@ interface SuKien {
     moTa: string | null;
     linkTaiLieu: string | null;
     hocKyId: string;
+    chiDoan?: ChiDoan;
 }
 
 export default function EditSuKienPage() {
@@ -32,6 +39,7 @@ export default function EditSuKienPage() {
     const [hocKys, setHocKys] = useState<HocKy[]>([]);
     const [suKien, setSuKien] = useState<SuKien | null>(null);
     const [isReadOnly, setIsReadOnly] = useState(false);
+    const [isDoanKhoaEvent, setIsDoanKhoaEvent] = useState(false);
     const [form, setForm] = useState({
         tenSuKien: '',
         moTa: '',
@@ -57,8 +65,11 @@ export default function EditSuKienPage() {
                 const sk = suKienData.suKien;
                 setSuKien(sk);
 
-                // Set read only if approved
-                if (sk.trangThaiDuyet === 'DA_DUYET') {
+                const isDK = sk.chiDoan?.maChiDoan === 'DOAN_KHOA';
+                setIsDoanKhoaEvent(isDK);
+
+                // Set read only if approved OR if it's a Doan Khoa event
+                if (sk.trangThaiDuyet === 'DA_DUYET' || isDK) {
                     setIsReadOnly(true);
                 }
 
@@ -150,8 +161,8 @@ export default function EditSuKienPage() {
                     </h1>
                 </div>
 
-                {isReadOnly && (
-                    <div className="mb-6 p-4 bg-blue-50 text-blue-700 rounded-xl text-sm">
+                {isReadOnly && !isDoanKhoaEvent && (
+                    <div className="mb-6 p-4 bg-blue-50 text-blue-700 rounded-xl text-sm border border-blue-100">
                         Sự kiện này đã được Đoàn Khoa duyệt nên không thể chỉnh sửa thông tin.
                     </div>
                 )}

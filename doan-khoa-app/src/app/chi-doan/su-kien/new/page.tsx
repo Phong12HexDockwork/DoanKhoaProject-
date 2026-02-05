@@ -56,6 +56,28 @@ export default function CreateSuKienPage() {
         e.preventDefault();
         setLoading(true);
 
+        // Validation
+        if (!form.tenSuKien.trim()) {
+            alert('Vui lòng nhập tên sự kiện');
+            setLoading(false);
+            return;
+        }
+
+        if (form.hinhThuc === 'OFFLINE' && (!form.diaDiem || !form.diaDiem.trim())) {
+            alert('Vui lòng nhập chi tiết địa điểm (phòng) cho sự kiện Offline');
+            setLoading(false);
+            return;
+        }
+
+        const start = new Date(`${form.ngayBatDau}T${form.gioBatDau}`);
+        const end = new Date(`${form.ngayKetThuc}T${form.gioKetThuc}`);
+
+        if (start >= end) {
+            alert('Thời gian kết thúc phải sau thời gian bắt đầu');
+            setLoading(false);
+            return;
+        }
+
         try {
             const res = await fetch('/api/chi-doan/su-kien', {
                 method: 'POST',
@@ -248,6 +270,7 @@ export default function CreateSuKienPage() {
                                     onChange={(e) => setForm({ ...form, diaDiem: e.target.value })}
                                     className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                                     placeholder="VD: Phòng F102"
+                                    required
                                 />
                             </div>
                         </div>
